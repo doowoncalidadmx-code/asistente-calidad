@@ -28,7 +28,7 @@ header h1{font-size:17px;margin:0;letter-spacing:.5px;flex:1;min-width:120px}
 main{max-width:1100px;margin:0 auto;padding:12px 16px 40px}
 .stage{position:relative;width:100%;background:#0E1322;border:4px solid #1F3358;box-shadow:0 6px 0 #0B0F1A;overflow:hidden}
 canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
-.bub{position:absolute;transform:translate(-50%,-100%);background:var(--bubble);color:var(--bubbleInk);border:2px solid #1A1F2E;padding:3px 7px;font-size:clamp(9px,1.25vw,13px);line-height:1.25;white-space:nowrap;max-width:24%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
+.bub{position:absolute;transform:translate(-50%,-100%);background:var(--bubble);color:var(--bubbleInk);border:2px solid #1A1F2E;padding:3px 7px;font-size:clamp(9px,1.25vw,13px);line-height:1.25;white-space:nowrap;max-width:22%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
 .bub::after{content:"";position:absolute;left:50%;bottom:-7px;width:8px;height:8px;background:var(--bubble);border-right:2px solid #1A1F2E;border-bottom:2px solid #1A1F2E;transform:translateX(-50%) rotate(45deg)}
 .bub.hi{border-color:var(--hi);color:#A0101F;font-weight:700}
 .bub.mid{border-color:var(--mid)}
@@ -465,6 +465,8 @@ const AG=[
  {id:"d8",role:{ko:"8D·사례 담당",es:"8D y casos"},tagL:{ko:"8D·사례",es:"8D / casos"},desk:2,look:{hair:"#7A3B1C",skin:"#D99A6C",style:"short",top:{k:"uniform",c:"#1F3358"},acc:["stubble"],ac:"#E5452B",chair:"#E67E22"}},
  {id:"sq",role:{ko:"협력사·고객 담당",es:"Proveedores y cliente"},tagL:{ko:"협력사·고객",es:"Prov. / cliente"},desk:3,look:{hair:"#4A2C1E",skin:"#D9A27A",style:"bob",top:{k:"uniform",c:"#1F3358"},acc:["lash","headset","lanyard"],chair:"#27AE60"}},
  {id:"fu",role:{ko:"변경점·유효성 담당",es:"Cambios 4M y efectividad"},tagL:{ko:"변경점·유효성",es:"4M / efectividad"},desk:4,look:{hair:"#3B2A20",skin:"#E8B48A",style:"fade",top:{k:"uniform",c:"#1F3358"},acc:["glasses"],chair:"#8E44AD"}},
+ {id:"qa",role:{ko:"품질보증 담당 (문서)",es:"Aseguramiento de calidad (documentos)"},tagL:{ko:"품질보증",es:"Aseguramiento"},desk:5,look:{hair:"#1E1E28",skin:"#E3B08A",style:"buzz",top:{k:"uniform",c:"#1F3358"},acc:["lanyard"],chair:"#C0392B"}},
+ {id:"qc",role:{ko:"품질관리 담당 (문서)",es:"Control de calidad (documentos)"},tagL:{ko:"품질관리",es:"Control"},desk:6,look:{hair:"#5A3322",skin:"#F2CDAE",style:"bun",top:{k:"uniform",c:"#1F3358"},acc:["lash","sgup"],chair:"#2E86C1"}},
  {id:"exp",role:{ko:"전문가 자문실",es:"Sala de expertos"},room:true,look:{}}];
 const AGI={};AG.forEach(a=>AGI[a.id]=a);
 
@@ -514,17 +516,18 @@ function status(Z){const out={};const tl=(ko,es)=>({ko,es});
   {const n=Z.issues.length;const XS={sens:{ko:"설비·센서",es:"equipos"},hld:{ko:"HLD",es:"HLD"},braz:{ko:"브레이징",es:"brazing"},bend:{ko:"배관가공",es:"conformado"},crimp:{ko:"크림핑",es:"crimpado"},iny:{ko:"사출",es:"inyección"},pweld:{ko:"융착",es:"soldadura plástica"},motor:{ko:"모터",es:"motores"},chem:{ko:"화학",es:"química"},log:{ko:"물류",es:"logística"}};const ks=[...new Set(Z.issues.flatMap(i=>expertsFor(i)))].slice(0,3).map(k=>L(XS[k]));
    out.exp={lv:n?"mid":"idle",short:n?tl(`자문 대기 ${n}건 · ${ks.join("·")}`,`${n} consultas · ${ks.join(", ")}`):tl("자문 요청 대기","Esperando consultas"),
     long:tl("설비·PLC·센서, 헬륨 누설, 브레이징, 배관 가공·크림핑, 사출·금형, 플라스틱 융착, 모터·NVH, 화학 전문가가 있는 방입니다. 문제를 적고(사진 가능) '전문가에게 묻기'를 누르면 웹 검색으로 자료를 찾아 출처와 함께 이 화면에서 답합니다. API 키가 없으면 요청문을 복사해 Claude 대화에 붙여넣으세요.","Sala con expertos en equipos/PLC/sensores, fugas de helio, brazing, conformado y crimpado, inyección/moldes, soldadura plástica, motores/NVH y química. Escriba el problema (con fotos) y pulse 'Preguntar': buscan fuentes en la web y responden aquí con citas. Sin clave API, copie la consulta y péguela en Claude.")}}
+  docStatus(out,tl);
   const LO={hi:3,mid:2,ok:1,idle:0};const mg=(a,b)=>{const top=LO[b.lv]>LO[a.lv]?b:a;return {lv:top.lv,short:top.short,long:{ko:a.long.ko+"\n"+b.long.ko,es:a.long.es+"\n"+b.long.es}}};
   if(S.aiBusy)out.exp=Object.assign({},out.exp,{lv:"mid",short:tl("전문가 회의 중…","Expertos trabajando…")});else if(S.aiLast&&Date.now()-S.aiLast.at<15*6e4)out.exp=Object.assign({},out.exp,{lv:"ok",short:tl("자문 완료 ✓ 눌러서 보기","Respuesta lista ✓")});
   return Object.assign(out,{insp:mg(out.insp,out.iqc),ana:mg(out.ana,out.rep),d8:mg(out.d8,out.kb),sq:VZ.files.length?mg(out.cus,out.sup):mg(out.sup,out.cus),fu:mg(out.chg,out.eff)})}
 // who hands work to whom (only when there is something to pass)
 function edges(Z){const e=[];if(Z.today.length)e.push(["insp","ana"]);if(Z.alerts.some(a=>a.st!=="ok"))e.push(["ana","d8"]);if(Z.issues.length)e.push(["d8","exp"]);if(Z.sup.length)e.push(["sq","insp"]);if(Z.iqc.some(o=>o.strong))e.push(["insp","sq"]);
-  if(Z.chg.some(x=>x.w.up))e.push(["fu","ana"]);if(Z.eff.some(x=>x.e.st==="bad"||x.e.st==="weak"))e.push(["fu","d8"]);if(Z.d8.length)e.push(["d8","ana"]);if(VZ.files.length)e.push(["sq","d8"]);return e}
+  if(Z.chg.some(x=>x.w.up))e.push(["fu","ana"]);if(Z.eff.some(x=>x.e.st==="bad"||x.e.st==="weak"))e.push(["fu","d8"]);if(Z.d8.length)e.push(["d8","ana"]);if(VZ.files.length)e.push(["sq","d8"]);if(Z.issues.length)e.push(["d8","qa"]);if(Z.top3.length)e.push(["ana","qc"]);if(Z.chg.length)e.push(["fu","qa"]);return e}
 
 /* ---------- pixel art (canvas is 2x; 1 logical px = 2 device px) ---------- */
 const cv=$("cv");let cx=cv.getContext("2d");cx.imageSmoothingEnabled=false;const VW=320,VH=196;
-const SEATS=[{x:62,y:72},{x:160,y:72},{x:258,y:72},{x:62,y:134},{x:160,y:134}];const AISLE=120;
-const RM={x0:210,y0:124,cx:265,ty:174,door:184};
+const SEATS=[{x:40,y:72},{x:118,y:72},{x:196,y:72},{x:40,y:134},{x:118,y:134},{x:274,y:72},{x:196,y:134}];const AISLE=120;
+const RM={x0:226,y0:124,cx:273,ty:174,door:184};
 const CI={blue:"#1B4B9B",red:"#E5452B"};
 const R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(Math.round(x*2)/2,Math.round(y*2)/2,w,h)};
 const LVC={hi:"#FF4D5E",mid:"#FFB627",ok:"#43D17F",idle:"#56607A"};
@@ -570,7 +573,9 @@ function desk(x,y,lv,blink,id){R(x-23,y+18,46,4,"#8B5E3C");R(x-23,y+18,46,1,"#A8
   if(id==="ana"){R(x+19.5,y+13,2,4.5,"#1FD17A");R(x+19.5,y+13,2,0.6,"#C9F7DE")}
   if(id==="d8"){R(x+19,y+14,3,3.5,"#FFFFFF");R(x+19,y+14,3,0.5,"#6B4A32");R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#FF8FAB")}
   if(id==="sq"){R(x+19,y+12,3.5,5,"#E9EDF2");R(x+19.5,y+10,2.5,2.5,"#4FB55C")}
-  if(id==="fu"){R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#43D17F");R(x-24,y+14,2,2,"#4DA3FF");R(x+19,y+12,3.5,5,"#FFFFFF");R(x+19.5,y+15,0.8,1.5,"#43D17F");R(x+20.6,y+14,0.8,2.5,"#43D17F")}}
+  if(id==="fu"){R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#43D17F");R(x-24,y+14,2,2,"#4DA3FF");R(x+19,y+12,3.5,5,"#FFFFFF");R(x+19.5,y+15,0.8,1.5,"#43D17F");R(x+20.6,y+14,0.8,2.5,"#43D17F")}
+  if(id==="qa"){R(x+18.5,y+10.5,4,7,"#0E1A33");R(x+19,y+11,3,6.5,"#1F3358");R(x+19.5,y+12,2,1,"#FFFFFF");R(x+19.5,y+13.5,2,0.5,CI.red);R(x-24,y+9,2.5,2.5,"#B8473F");R(x-23.5,y+9.5,1.5,1.5,"#E06A60")}
+  if(id==="qc"){R(x+18,y+13,5,1,"#AEB6C6");R(x+18,y+13,5,0.5,"#E2E6EE");R(x+21,y+11,1,4,"#8E97AB");R(x+19,y+11,1,3,"#8E97AB");R(x-24,y+8,2,2,"#43D17F");R(x-24,y+11,2,2,"#FFE066")}}
 const OUT="#2B1E1A";const U=0.75,SN=v=>Math.round(v*2)/2;
 // front-facing person (young crew outfits). frame animates; sitting = behind the desk
 function person(x,y,lk,frame,sitting,carry){const ox=Math.round(x)-9,oy=Math.round(y);
@@ -622,9 +627,9 @@ function person(x,y,lk,frame,sitting,carry){const ox=Math.round(x)-9,oy=Math.rou
 function zz(x,y,tick){const k=Math.floor(tick/6)%3;cx.fillStyle="#EAF0FA";cx.font="bold 6px monospace";cx.fillText("z",x+8+k,y-1-k*2);if(k>0){cx.font="bold 4px monospace";cx.fillText("z",x+12+k,y-4-k*2)}}
 
 /* ---------- expert room (glass room, bottom right) ---------- */
-const XGROUP=[{id:"eq",name:{ko:"설비·전기",es:"Equipos y eléctrico"},keys:["sens","motor","log"],x:240,lk:{skin:"#E8C2A0",hair:"#B9BEC6",style:"short",top:{k:"blazer",c:"#2B3A67",tie:CI.red},acc:["glasses"]}},
- {id:"pl",name:{ko:"플라스틱 (사출·융착·화학)",es:"Plásticos (inyección, soldadura, química)"},keys:["iny","pweld","chem"],x:265,lk:{skin:"#F1D0B0",hair:"#2B2230",style:"bun",top:{k:"labcoat",c:"#F4F6F8",i:"#B07CFF"},acc:["round"]}},
- {id:"al",name:{ko:"알루미늄 배관 (가공·브레이징·누설)",es:"Tubo de aluminio (conformado, brazing, fugas)"},keys:["bend","crimp","braz","hld"],x:290,lk:{skin:"#C68E63",hair:"#8E8E8E",style:"buzz",top:{k:"flannel",c:"#A63A2F",i:"#2B2B2B"},acc:["beard","sgup"]}}];
+const XGROUP=[{id:"eq",name:{ko:"설비·전기",es:"Equipos y eléctrico"},keys:["sens","motor","log"],x:250,lk:{skin:"#E8C2A0",hair:"#B9BEC6",style:"short",top:{k:"blazer",c:"#2B3A67",tie:CI.red},acc:["glasses"]}},
+ {id:"pl",name:{ko:"플라스틱 (사출·융착·화학)",es:"Plásticos (inyección, soldadura, química)"},keys:["iny","pweld","chem"],x:273,lk:{skin:"#F1D0B0",hair:"#2B2230",style:"bun",top:{k:"labcoat",c:"#F4F6F8",i:"#B07CFF"},acc:["round"]}},
+ {id:"al",name:{ko:"알루미늄 배관 (가공·브레이징·누설)",es:"Tubo de aluminio (conformado, brazing, fugas)"},keys:["bend","crimp","braz","hld"],x:296,lk:{skin:"#C68E63",hair:"#8E8E8E",style:"buzz",top:{k:"flannel",c:"#A63A2F",i:"#2B2B2B"},acc:["beard","sgup"]}}];
 function expertRoom(Z,tick){const x0=RM.x0,y0=RM.y0;
   carpet();for(let i=0;i<4;i++)R(x0+6+i*22,y0+4,8,0.5,"rgba(255,255,255,.35)");
   // glass walls + door
@@ -696,7 +701,9 @@ function desk(x,y,lv,blink,id){
   if(id==="ana"){R(x+19,y+12.5,3,5,"#0F5E38");R(x+19.5,y+13,2,4.5,"#1FD17A");R(x+19.5,y+13,2,0.6,"#C9F7DE")}
   if(id==="d8"){R(x+19,y+14,3,3.5,"#FFFFFF");R(x+19,y+14,3,0.5,"#6B4A32");R(x+21.5,y+14,0.5,3.5,"#C9CFD8");R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#FF8FAB")}
   if(id==="sq"){R(x+19,y+12,3.5,5,"#E9EDF2");R(x+21.5,y+12,0.5,5,"#B9C1CF");R(x+19.5,y+10,2.5,2.5,"#4FB55C");R(x+19.5,y+10,1,1,"#8FE39A")}
-  if(id==="fu"){R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#43D17F");R(x-24,y+14,2,2,"#4DA3FF");R(x+19,y+12,3.5,5,"#FFFFFF");R(x+21.5,y+12,0.5,5,"#C9CFD8");R(x+19.5,y+15,0.8,1.5,"#43D17F");R(x+20.6,y+14,0.8,2.5,"#43D17F")}}
+  if(id==="fu"){R(x-24,y+8,2,2,"#FFE066");R(x-24,y+11,2,2,"#43D17F");R(x-24,y+14,2,2,"#4DA3FF");R(x+19,y+12,3.5,5,"#FFFFFF");R(x+21.5,y+12,0.5,5,"#C9CFD8");R(x+19.5,y+15,0.8,1.5,"#43D17F");R(x+20.6,y+14,0.8,2.5,"#43D17F")}
+  if(id==="qa"){R(x+18.5,y+10.5,4,7,"#0E1A33");R(x+19,y+11,3,6.5,"#1F3358");R(x+19.5,y+12,2,1,"#FFFFFF");R(x+19.5,y+13.5,2,0.5,CI.red);R(x-24,y+9,2.5,2.5,"#B8473F");R(x-23.5,y+9.5,1.5,1.5,"#E06A60")}
+  if(id==="qc"){R(x+18,y+13,5,1,"#AEB6C6");R(x+18,y+13,5,0.5,"#E2E6EE");R(x+21,y+11,1,4,"#8E97AB");R(x+19,y+11,1,3,"#8E97AB");R(x-24,y+8,2,2,"#43D17F");R(x-24,y+11,2,2,"#FFE066")}}
 function tableTop(){const c=RM.cx,cy=RM.ty;shadowE(c,cy+11,30,2.5,0.28);
   for(let i=-9;i<=9;i+=0.5){const w=34*Math.sqrt(Math.max(0,1-(i/9.5)*(i/9.5)));const x0=Math.round((c-w)*2)/2,ww=Math.round(w*4)/2;
     R(x0-0.5,cy+i,ww+1,0.5,"#2A3140");R(x0,cy+i,ww,0.5,i<-6?"#FFFFFF":i<6?"#ECEFF4":i<7.5?"#C9CFD9":"#9AA3B4")}
@@ -728,7 +735,7 @@ function fxItem(key,bb,fn,sh){if(!FX){FX=document.createElement("canvas");FX.wid
 const WALK=[];
 function startWalk(from,to){const a=AGI[from];if(!a||a.room||WALK.some(w=>w.who===from))return;const s=SEATS[a.desk];
   const fy=s.y+16,sx=s.x+27;let pts;
-  if(to==="exp"){pts=[[s.x,fy],[sx,fy],[sx,AISLE],[200,AISLE],[200,RM.door],[224,RM.door]]}
+  if(to==="exp"){pts=[[s.x,fy],[sx,fy],[sx,AISLE],[222,AISLE],[222,RM.door],[238,RM.door]]}
   else{const d=SEATS[AGI[to].desk];const tx=d.x+27,ty=d.y+16;pts=[[s.x,fy],[sx,fy],[sx,AISLE],[tx,AISLE],[tx,ty]]}
   WALK.push({who:from,to,pts:pts.concat(pts.slice(0,-1).reverse()),arr:pts.length-1,i:0,x:s.x,y:fy,wait:0,carry:true})}
 function stepWalk(){for(let k=WALK.length-1;k>=0;k--){const w=WALK[k];if(w.wait>0){w.wait--;continue}const p=w.pts[w.i+1];if(!p){WALK.splice(k,1);continue}
@@ -887,6 +894,117 @@ function panelTemplate(r){const q=vzQuestion(r);const m=q.m;const ts=r.ts?new Da
   P("■ Supply Chain: "+(hm?"Supplier (MX) → Warehouse (US) → HMGMA":"Supplier (MX) → "+(r.site||"Customer")));P("");
   P("■ Quality Chargeback (inputs)");P("  - Investigation: details / hours / manpower – TBC");P("  - Repair: details / hours / manpower – TBC");P("");
   P("■ Effectiveness check: 60 days without recurrence; horizontal deployment to similar parts and stations");return o.join("\n")}
+/* ---------- v1.5: document desks – 품질보증(qa) and 품질관리(qc) draft documents from what the manager hands over ---------- */
+let DOCH=[];try{DOCH=JSON.parse(localStorage.getItem("equipo-docs")||"[]")}catch(e){DOCH=[]}
+function saveDocs(){try{localStorage.setItem("equipo-docs",JSON.stringify(DOCH.slice(0,30)))}catch(e){DOCH=DOCH.slice(0,10);try{localStorage.setItem("equipo-docs",JSON.stringify(DOCH))}catch(e2){}}}
+const DOCT={
+ qa:[
+  {id:"8d",ko:"고객 대책서 8D (한국어)",es:"8D para cliente (coreano)",lang:"ko",sys:()=>SYS8D.ko,fmt:"8D: D1 팀 / D2 문제 / D3 봉쇄 / D4 원인 (발생·유출) / D5·D6 영구 대책 / D7 재발 방지·표준화 / D8 종결"},
+  {id:"panel",ko:"HMGMA·KIA Problem Solving Panel (영문)",es:"Problem Solving Panel HMGMA/KIA (inglés)",lang:"en",sys:()=>SYS8D.en,fmt:"Panel: Problem Description / Containment Result + Clean Point / Root Cause Analysis / Short Term Countermeasure / Long Term Countermeasure / Supply Chain / Quality Chargeback"},
+  {id:"4m",ko:"4M 변경 신고서 (HKMC 기준)",es:"Reporte de cambio 4M (HKMC)",lang:"ko",fmt:"4M 변경 신고서: 변경 유형 (HKMC 15개 유형 중 해당, 아래 기준표) / 4M 구분 / 대상 품번·품명·차종 / 변경 내용 (변경 전 → 변경 후) / 변경 사유 / 적용 예정일·적용 LOT·재고 처리 / ISIR 대상 여부와 근거 / 제출서류 체크리스트 (기본 4종 검사기준서·검사성적서·초도품 보증서·4M변경 신고서 + 유형별 추가서류) / 변경 검증 계획 (초품·3로트·치수·성능·신뢰성) / 문서 개정 (PFMEA·CP·작업표준·검사기준서) / 고객 사전 신고 시점 (VAATZ)"},
+  {id:"mail",ko:"고객 회신 메일",es:"Correo de respuesta al cliente",lang:"en",fmt:"고객 회신 메일: Subject / 인사 / 접수 확인 (클레임 번호·품번·현상) / 봉쇄 결과 (위치별 Total·OK·NG, Clean Point) / 원인 조사 현황 (확정 전이면 진행 중) / 다음 단계와 일정 / 서명 (Beong Hun Jeong, Quality Manager, Doowon Refrigeration México)"},
+  {id:"scar",ko:"협력사 시정조치 요구서 (SCAR)",es:"Solicitud de acción correctiva (SCAR)",lang:"es",fmt:"SCAR: 수신 협력사 / 발행일·문서번호 / 품번·품명 / 불량 현상 (수량·LOT·발견 공정·사진 근거) / 요구 1 즉시 봉쇄 (재고·운송 중 선별) / 요구 2 원인 분석 (발생·유출 5Why) / 요구 3 영구 대책과 효과 확인 / 요구 4 수평 전개 / 회신 기한 / 비용 처리 (해당 시) / 첨부"},
+  {id:"brief",ko:"상부 보고 한 장 요약",es:"Reporte ejecutivo de 1 hoja",lang:"ko",fmt:"상부 보고: 제목 / 현황 (무엇이·언제·몇 개·고객 영향) / 원인 (확인됨·후보) / 조치 (완료·진행·예정, 담당·일정) / 리스크·결정 필요 사항 / 다음 보고 시점"}],
+ qc:[
+  {id:"min",ko:"협의록 (회의록)",es:"Minuta de reunión",lang:"ko",fmt:"협의록: 제목 / 일시 / 주관부서 / 참석자 / 목적 / 1. 문제점 (현상, SPEC vs 현물) / 2. 개선 안 (번호별, 변경 전·후 SPEC·현물, 담당) / 3. 개선 일정 (SAMPLE TRY OUT 결과 n EA 中 불량 n EA, 지그·금형·설비 개선, 적용 시점) / 4. 재고 소진 후 적용 예정일 (재고 사내·협력사·운송 중, 소진일, 임시조치) / 결정 사항 / 배부처"},
+  {id:"vstd",ko:"외관 검사기준서",es:"Estándar de inspección visual",lang:"ko",fmt:"외관 검사기준서: [차종] 외관 검사기준서 / 품명·품번·중요도 (A·B·C) / 제품사진 – 번호별 검사 위치 / 외관중점검사항목 – 번호별 확대 사진 내용 / 검사 POINT – 번호별 '…없을 것' + 스페인어 / 검사 조건 (한도견본·조도·거리·시간) / REV·일자 / 담당·검토·승인"},
+  {id:"wi",ko:"현장 작업·검사 지시서 (스페인어)",es:"Hoja de instrucción de trabajo/inspección",lang:"es",fmt:"Hoja de instrucción: Título / Proceso y estación / Objetivo / Herramientas y equipo / Pasos numerados (un verbo por paso) / Puntos clave de calidad y seguridad / Criterio OK / NG / Qué hacer si hay NG (detener, separar, avisar a Calidad) / Registro"},
+  {id:"ppm",ko:"주간 PPM 레포트 코멘트",es:"Comentario del reporte semanal de PPM",lang:"ko",fmt:"주간 PPM 코멘트: 주차 / 전체 요약 (전주 대비) / Top 3 불량 (불량명·수량·PPM·추이·원인 공정) / Top 항목별 원인 (확인됨·후보)·조치 (담당·일정) / 경보·이슈 / 다음 주 중점"},
+  {id:"spc",ko:"SPC·Cpk 결과 보고",es:"Reporte de SPC / Cpk",lang:"ko",fmt:"SPC 보고: 대상 (품번·특성·규격) / 데이터 (기간·군 크기·군 수) / 관리도 판정 (X-bar 7규칙) / Cp·Cpk (목표 1.33 이상) / 해석 / 조치"},
+  {id:"train",ko:"현장 교육 1장 (스페인어)",es:"Capacitación de 1 hoja",lang:"es",fmt:"Capacitación: Tema / Por qué importa (cliente, costo) / Cómo se ve el defecto (OK vs NG) / Causas comunes / Cómo prevenirlo (3–5 pasos) / Criterio de aceptación / 3 preguntas de repaso con respuesta"}]};
+const DOCLANG={ko:"한국어",es:"Español (México)",en:"English"};
+function docSys(dept,tk,lg){if(tk.sys)return tk.sys()+"\n출력 언어: "+DOCLANG[lg];
+  return `너는 두원냉기 멕시코 품질팀의 ${dept==="qa"?"품질보증":"품질관리"} 담당 직원이다. 상사인 정병훈 과장(품질)이 넘긴 자료(문서·사진·엑셀·메모)로 지정 양식의 초안을 작성한다.
+규칙: 1) 자료에 없는 수치·날짜·이름·수량은 만들지 말고 [확인 필요]로 둔다. 2) 자료에서 가져온 사실에는 근거(파일명·슬라이드/쪽)를 괄호로 단다. 3) 개조식, 짧은 문장. SPEC 대비 현물, 변경 전 → 후 수치로 쓴다. 4) 원인은 [확인됨]/[후보]로 구분하고 '작업자 실수' 단독 원인은 쓰지 않는다. 5) 표가 필요하면 마크다운 표(| 칸 | 칸 |)로 쓴다 – 앱이 엑셀·워드로 바꾼다. 6) 맨 끝에 '확인 필요' 목록을 둔다. 7) 계산이 필요한 숫자는 앱이 준 계산 결과만 쓰고 직접 계산하지 않는다.
+현장 조건: 냉각탑 공급수 20℃대 고정, 금형반 없음, 흡기 커버·바디는 외관품, 멕시코 경수, 재질 PP-TD40(사출)·PP-TD30(융착)·Al3003(배관). 고객은 KIA 멕시코(KMX)·HMGMA. 현장 작업자는 스페인어.
+출력 언어: ${DOCLANG[lg]}
+양식 – 아래 순서와 제목을 지킨다:
+${tk.fmt}`}
+function docExtra(tk){let x="";
+  if(tk.id==="4m"&&KB&&KB.m4&&KB.m4.length)x+="\n[HKMC 4M 신고 기준표]\n"+KB.m4.map(m=>`${m.id} ${m.k} ${m.name} – ${m.rule} / 제외: ${m.exc} / ISIR ${m.isir} / 제출서류: ${m.docs}`).join("\n");
+  if(tk.id==="vstd"&&KB&&KB.vp&&KB.vp.length)x+="\n[검사 POINT 표준 문구]\n"+KB.vp.map(v=>`${v.id} ${v.ko} / ${v.es}`).join("\n");
+  if(tk.id==="spc")x+="\n[X-bar 판정 7규칙] 1 한계 밖 / 2 한쪽 7점 연속 / 3 7점 연속 상승·하강 / 4 주기 (육안) / 5 2σ 밖 3점 중 2·7점 중 3·10점 중 4 / 6 1σ 안 90% 이상 / 7 1σ 밖 40% 이상";
+  return x}
+function heatSummary(){if(!Z)return"";const L=[`[히트맵 요약 ${Z.wk}] 이번 주 ${Z.thisW.length}건 ${fmt(Z.thisW.reduce((s,r)=>s+r.qty,0))}개`];
+  Z.top3.forEach((x,i)=>L.push(`Top${i+1} ${typeName(x.type)} ${x.part||""} ${fmt(x.q)}개`));
+  Z.alerts.slice(0,5).forEach(a=>L.push(`${a.st==="hi"?"경보":"주의"} ${a.key} ${typeName(a.topType)} 최근 7일 ${fmt(a.cur)} (${a.ratio===Infinity?"신규":"×"+a.ratio.toFixed(1)})`));
+  if(S.demo)L.push("(데모 데이터)");return L.join("\n")}
+/* read office files in the browser: pptx/docx are zip – inflate with DecompressionStream */
+async function zipEntries(buf,want){const dv=new DataView(buf);let e=-1;for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-70000);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}if(e<0)return [];
+  const n=dv.getUint16(e+10,true);let off=dv.getUint32(e+16,true);const out=[];
+  for(let k=0;k<n;k++){if(dv.getUint32(off,true)!==0x02014b50)break;const meth=dv.getUint16(off+10,true),cs=dv.getUint32(off+20,true),nl=dv.getUint16(off+28,true),el2=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true),lh=dv.getUint32(off+42,true);
+    const name=new TextDecoder().decode(new Uint8Array(buf,off+46,nl));off+=46+nl+el2+cl;if(!want(name))continue;
+    const data=new Uint8Array(buf,lh+30+dv.getUint16(lh+26,true)+dv.getUint16(lh+28,true),cs);let bytes;
+    if(meth===0)bytes=data;else if(meth===8&&typeof DecompressionStream!=="undefined")bytes=new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());else continue;out.push({name,bytes})}
+  return out}
+const xmlText=s=>s.replace(/<\/a:p>|<\/w:p>|<\/w:tr>/g,"\n").replace(/<\/w:tc>|<\/a:tc>/g," | ").replace(/<a:tab\/>|<w:tab\/>/g," ").replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/[ \t]+\n/g,"\n").replace(/\n{2,}/g,"\n").trim();
+async function readOffice(f){const buf=await f.arrayBuffer();const P=/\.pptx$/i.test(f.name);
+  const ents=await zipEntries(buf,n=>P?/^ppt\/slides\/slide\d+\.xml$/.test(n)||/^ppt\/media\/.+\.(png|jpe?g)$/i.test(n):/^word\/document\.xml$/.test(n)||/^word\/media\/.+\.(png|jpe?g)$/i.test(n));
+  const xs=ents.filter(x=>/\.xml$/.test(x.name));if(P)xs.sort((a,b)=>+a.name.match(/(\d+)\.xml/)[1]-+b.name.match(/(\d+)\.xml/)[1]);
+  const text=xs.map((x,i)=>(P?`[${f.name} 슬라이드 ${i+1}] `:`[${f.name}] `)+xmlText(new TextDecoder().decode(x.bytes))).join("\n");
+  const imgs=ents.filter(x=>/media\//.test(x.name)&&x.bytes.length>15000).slice(0,3).map(x=>new File([x.bytes],x.name.split("/").pop(),{type:/png$/i.test(x.name)?"image/png":"image/jpeg"}));
+  return {text,imgs}}
+async function readDocInputs(files){let text="",imgs=[],pdfs=[],notes=[];const fs=Array.from(files||[]);
+  for(const f of fs){try{
+    if(/\.(pptx|docx)$/i.test(f.name)){const r=await readOffice(f);text+="\n"+r.text;imgs=imgs.concat(r.imgs);notes.push(f.name)}
+    else if(/\.(xlsx|xlsm|xls|csv)$/i.test(f.name)){const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});wb.SheetNames.slice(0,4).forEach(n=>{text+=`\n[${f.name} – ${n}]\n`+XLSX.utils.sheet_to_csv(wb.Sheets[n],{blankrows:false}).slice(0,9000)});notes.push(f.name)}
+    else if(/\.txt$/i.test(f.name)){text+=`\n[${f.name}]\n`+(await f.text()).slice(0,9000);notes.push(f.name)}
+    else if(/^image\//.test(f.type))imgs.push(f);
+    else if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name))notes.push(f.name);
+    else notes.push(f.name+" (읽지 못함 – PDF로 저장해 주세요)")}catch(e){notes.push(f.name+" (읽기 오류)")}}
+  pdfs=await readPdfs(fs);const im=await readImgs(imgs);return {text:text.slice(0,40000),imgs:im,pdfs,notes}}
+/* exports: markdown tables → Excel sheets, whole draft → Word (.doc) */
+function mdTables(t){const tabs=[];let cur=null;String(t).split("\n").forEach(l=>{const s=l.trim();if(/^\|.*\|$/.test(s)){if(/^\|[\s:\-|]+\|$/.test(s))return;(cur=cur||[]).push(s.slice(1,-1).split("|").map(c=>c.trim().replace(/\*\*/g,"")))}else if(cur){tabs.push(cur);cur=null}});if(cur)tabs.push(cur);return tabs}
+const safeName=s=>String(s).replace(/[\\/:*?"<>|]/g,"_").slice(0,60);
+function docXlsx(title,text){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([[title]].concat(String(text).split("\n").map(l=>[l])));ws["!cols"]=[{wch:110}];XLSX.utils.book_append_sheet(wb,ws,lang==="ko"?"초안":"Borrador");
+  mdTables(text).forEach((tb,i)=>{const w=XLSX.utils.aoa_to_sheet(tb);w["!cols"]=tb[0].map((_,j)=>({wch:Math.min(50,Math.max(8,...tb.map(r=>String(r[j]||"").length+2)))}));XLSX.utils.book_append_sheet(wb,w,(lang==="ko"?"표":"Tabla")+(i+1))});
+  XLSX.writeFile(wb,safeName(title)+".xlsx")}
+function mdToHtml(text){const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));let h="",tb=null;
+  const flush=()=>{if(tb){h+="<table border=1 cellspacing=0 cellpadding=4 style='border-collapse:collapse;font-size:10pt;margin:4px 0'>"+tb.map((r,i)=>"<tr>"+r.map(c=>(i?"<td>":"<th style='background:#D9E1F2'>")+esc(c)+(i?"</td>":"</th>")).join("")+"</tr>").join("")+"</table>";tb=null}};
+  String(text).split("\n").forEach(l=>{const s=l.trim();if(/^\|.*\|$/.test(s)){if(!/^\|[\s:\-|]+\|$/.test(s))(tb=tb||[]).push(s.slice(1,-1).split("|").map(c=>c.trim().replace(/\*\*/g,"")));return}flush();
+    if(/^#{1,4}\s/.test(s)||/^■/.test(s))h+="<h4 style='color:#1F3358;margin:8px 0 2px'>"+esc(s.replace(/^#+\s*/,""))+"</h4>";else if(s)h+="<p style='margin:2px 0'>"+esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")+"</p>"});flush();return h}
+function docWord(title,text){const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const html=`<html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="font-family:'Malgun Gothic',Arial;font-size:10.5pt"><h2 style="color:#1F3358">${esc(title)}</h2>${mdToHtml(text)}</body></html>`;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+html],{type:"application/msword"}));a.download=safeName(title)+".doc";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function docOffline(dept,tk,memo,inp,lg){const H=tk.fmt.split(":").slice(1).join(":").split(" / ").map(s=>s.trim()).filter(Boolean);const ko=lg==="ko";
+  const o=[(ko?"초안 (템플릿) – ":"Borrador (plantilla) – ")+(ko?tk.ko:tk.es),ko?"※ API 키가 없어 양식 틀만 채웠습니다. 칸을 채워 쓰세요.":"※ Sin clave API: solo la estructura.",""];
+  H.forEach(x=>{o.push("■ "+x);o.push("  - "+(ko?"[확인 필요]":"[por confirmar]"));o.push("")});
+  if(memo)o.push((ko?"■ 메모: ":"■ Nota: ")+memo);if(inp.notes.length)o.push((ko?"■ 받은 자료: ":"■ Material: ")+inp.notes.join(", "));if(inp.text)o.push((ko?"■ 자료에서 읽은 글 (앞부분)\n":"■ Texto leído\n")+inp.text.slice(0,1500));
+  const v=dept==="qc"&&tk.id==="vstd"&&KB&&KB.vp?KB.vp:null;if(v){o.push("");o.push("■ 검사 POINT 문구 후보");v.forEach(p=>o.push(`  - ${p.ko} / ${p.es}`))}
+  return o.join("\n")}
+function docResult(dept,item,box){box.textContent="";const d=el("div","ans");d.appendChild(el("div","msg",new Date(item.at).toLocaleString()+" · "+(item.model||"")));
+  const tx=el("div","atext doc");tx.innerHTML=mdToHtml(item.text);d.appendChild(tx);
+  if(item.src&&item.src.length){d.appendChild(el("b",null,"Sources"));const ol=el("ol");item.src.forEach(s2=>{if(!/^https?:\/\//.test(s2.url))return;const li=el("li");const a=el("a",null,s2.title);a.href=s2.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});d.appendChild(ol)}
+  const r=el("div","irow");const b1=el("button",null,t("copy"));b1.type="button";b1.addEventListener("click",()=>copyTxt(item.text,b1));
+  const b2=el("button",null,lang==="ko"?"엑셀로 저장":"Guardar Excel");b2.type="button";b2.addEventListener("click",()=>docXlsx(item.title,item.text));
+  const b3=el("button",null,lang==="ko"?"워드로 저장":"Guardar Word");b3.type="button";b3.addEventListener("click",()=>docWord(item.title,item.text));r.append(b1,b2,b3);d.appendChild(r);box.appendChild(d)}
+function docSection(b,h,dept){const ko=lang==="ko";const T=DOCT[dept];
+  h(ko?"업무 맡기기":"Asignar trabajo");const f=el("div","frm");
+  const iT=field(f,ko?"양식":"Formato",sel(T.map(x=>[x.id,ko?x.ko:x.es]),T[0].id));
+  const iL=field(f,ko?"작성 언어":"Idioma",sel([["auto",ko?"양식 기본값":"Predeterminado"],["ko","한국어"],["es","Español"],["en","English"]],"auto"));
+  const iF=inp("file");iF.multiple=true;iF.accept=".pdf,.pptx,.docx,.xlsx,.xls,.csv,.txt,image/*";field(f,ko?"자료 (PDF·PPT·워드·엑셀·사진, 여러 개)":"Material (PDF, PPT, Word, Excel, fotos)",iF);
+  const iM=el("textarea");iM.rows=4;iM.placeholder=ko?"지시 메모: 무엇을, 누구에게, 언제까지, 강조할 점 (예: KMX 클레임 회신, 봉쇄 수량 120EA 모두 OK)":"Indicaciones: qué, para quién, para cuándo";field(f,ko?"메모":"Nota",iM);
+  const lb=el("label");lb.style.cssText="display:flex;gap:6px;align-items:center;margin:4px 0";const iH=inp("checkbox");iH.style.cssText="width:auto;min-height:0;margin:0";iH.checked=["ppm","brief"].includes(T[0].id);lb.append(iH,document.createTextNode(ko?" 히트맵 최근 불량 데이터 함께 보내기":" Incluir datos recientes del mapa de defectos"));f.appendChild(lb);
+  iT.addEventListener("change",()=>{iH.checked=["ppm","brief","spc"].includes(iT.value)});
+  const bt=el("button","pri",ko?"작성 시작":"Redactar");bt.type="button";f.appendChild(bt);b.appendChild(f);const out=el("div");b.appendChild(out);
+  b.appendChild(el("p","msg",ko?"PPT·워드는 글과 사진 3장까지 읽습니다. 예전 형식(.ppt/.doc)은 PDF로 저장해서 넣어 주세요. 자료는 이 기기에서만 처리되고, 작성할 때만 Claude로 보내집니다.":"Se leen texto y hasta 3 fotos de PPT/Word. Los archivos .ppt/.doc antiguos: guárdelos como PDF."));
+  bt.addEventListener("click",async()=>{const tk=T.find(x=>x.id===iT.value);const lg=iL.value==="auto"?tk.lang:iL.value;const memo=iM.value.trim();
+    if(!memo&&!(iF.files&&iF.files.length)&&!iH.checked){iF.focus();return}
+    out.textContent="";out.appendChild(el("p","msg",ko?"자료 읽는 중…":"Leyendo material…"));const inp=await readDocInputs(iF.files);
+    let calc="";if(tk.id==="spc"&&inp.text){const P=spcParse(inp.text,0);if(!P.err){const R=spcCalc(P,null,null);if(!R.err)calc=`\n[앱 계산 결과] n=${R.n}, 점 ${R.N}, CL ${R.cl.toPrecision(5)}, UCL ${R.ucl.toPrecision(5)}, LCL ${R.lcl.toPrecision(5)}, σ ${R.sig.toPrecision(3)}, 걸린 규칙: ${Object.keys(R.V).join(", ")||"없음"} (규격은 자료에서 확인해 Cpk는 [확인 필요]로)`}}
+    const title=(ko?tk.ko:tk.es)+" "+new Date().toISOString().slice(0,10);
+    if(!aiCfg().key){const item={dept,task:tk.id,title,text:docOffline(dept,tk,memo,inp,lg),at:Date.now(),model:"template"};DOCH.unshift(item);saveDocs();docResult(dept,item,out);refreshView();return}
+    out.textContent="";out.appendChild(el("p","msg",(ko?"작성 중… (30초~2분) 읽은 자료: ":"Redactando… material: ")+(inp.notes.join(", ")||"-")));S.docBusy=dept;refreshView();
+    try{const q=`[과장님 지시]\n${memo||"(메모 없음)"}\n\n[받은 자료 목록] ${inp.notes.join(", ")||"-"}\n`+(inp.text?`\n[자료에서 읽은 글]\n${inp.text}\n`:"")+(iH.checked?"\n"+heatSummary()+"\n":"")+docExtra(tk)+calc+`\n\n위 자료로 '${tk.ko}' 양식 초안을 작성해줘.`;
+      const res=await askAI(q,inp.imgs,{sys:docSys(dept,tk,lg),search:1,docs:inp.pdfs});const item={dept,task:tk.id,title,text:res.text,src:res.src,at:res.at,model:res.model};DOCH.unshift(item);saveDocs();docResult(dept,item,out)}
+    catch(e){out.textContent="";out.appendChild(el("p","msg",(ko?"오류: ":"Error: ")+e.message+aiErrHint(e.message)))}finally{S.docBusy=null;refreshView()}});
+  const mine=DOCH.filter(x=>x.dept===dept);if(mine.length){h(ko?"최근 작성":"Recientes");mine.slice(0,8).forEach(x=>{const d=el("div","icard");d.appendChild(el("b",null,x.title));d.appendChild(el("div","msg",new Date(x.at).toLocaleString()+" · "+(x.model||"")));
+    const r=el("div","irow");const bv=el("button",null,ko?"보기":"Ver");bv.type="button";const box=el("div");bv.addEventListener("click",()=>{if(box.childNodes.length)box.textContent="";else docResult(dept,x,box)});
+    const bd=el("button",null,ko?"삭제":"Borrar");bd.type="button";bd.addEventListener("click",()=>{DOCH=DOCH.filter(y=>y!==x);saveDocs();openDrawer(dept)});r.append(bv,bd);d.appendChild(r);d.appendChild(box);b.appendChild(d)})}}
+function docStatus(out,tl){["qa","qc"].forEach(d=>{const busy=S.docBusy===d;const last=DOCH.find(x=>x.dept===d);const recent=last&&Date.now()-last.at<30*6e4;
+  out[d]={lv:busy?"mid":recent?"ok":"idle",short:busy?tl("작성 중…","Redactando…"):recent?tl("초안 완료 ✓ "+last.title.slice(0,16),"Borrador listo ✓"):tl("자료 주시면 작성합니다 zZ","Esperando material zZ"),
+    long:d==="qa"?tl("품질보증 담당입니다. 자료(PDF·PPT·워드·엑셀·사진)와 메모를 넘기면 고객 대책서(8D), HMGMA·KIA Panel, 4M 변경 신고서(HKMC 기준), 고객 회신 메일, 협력사 시정요구서(SCAR), 상부 보고 한 장을 양식대로 씁니다. 결과는 복사·엑셀·워드로 받을 수 있습니다.","Aseguramiento de calidad: con el material y una nota redacto 8D, Panel HMGMA/KIA, reporte 4M (HKMC), correo al cliente, SCAR y reporte ejecutivo. Se puede copiar o guardar en Excel/Word.")
+     :tl("품질관리 담당입니다. 자료와 메모를 넘기면 협의록, 외관 검사기준서, 현장 작업·검사 지시서(스페인어), 주간 PPM 코멘트, SPC·Cpk 결과 보고, 현장 교육 1장을 양식대로 씁니다. 결과는 복사·엑셀·워드로 받을 수 있습니다.","Control de calidad: redacto minutas, estándar de inspección visual, hojas de instrucción en español, comentario de PPM semanal, reporte SPC/Cpk y capacitación de 1 hoja.")}})}
 function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",sup:"sq",cus:"sq"}[id]||id;S.open=id;const SUB={insp:["insp","iqc"],ana:["ana","rep"],d8:["d8","kb"],sq:["sup","cus"],fu:["chg","eff"]}[id]||[id];const is_=k=>SUB.includes(k);const a=AGI[id],st=ST[id];$("dTitle").textContent=L(a.role);const b=$("dBody");b.textContent="";const p=document.createElement("p");p.textContent=L(st.long);b.appendChild(p);
   const h=s=>{const e=document.createElement("h3");e.textContent=s;b.appendChild(e)};
   if(is_("insp")){h(t("today"));b.appendChild(tbl([t("proc"),t("defect"),t("part"),t("qty")],Z.today.slice(-15).reverse().map(r=>[procName(r.oproc),typeName(r.type),r.part||"-",fmt(r.qty)])));
@@ -945,6 +1063,7 @@ function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",s
     if(Z.iqc.length)b.appendChild(tbl([t("part"),t("defect"),t("qty"),ko?"주수":"Sem.","",ko?"입고 확인 방법":"Cómo revisar"],Z.iqc.map(o=>[o.part,typeName(o.top),fmt(o.q),o.weeks,o.strong?pill(ko?"강화":"Reforzada","#E59500"):"-",iqcHow(o.top)])));else b.appendChild(el("p","msg",t("none")));
     h(ko?"KD·수입품 입고 체크 (사례 C05)":"Checklist de recibo KD (caso C05)");const ul=el("ul");
     (ko?["포장 상태 사진 (개봉 전)","전용 박스·칸막이 사용 여부","한도견본과 비교 (외관·변형)","성적서·라벨·수량 대조","이상 시 격리 → 협력사 담당에게 시정 요구(SCAR)"]:["Foto del empaque antes de abrir","Caja dedicada / separadores","Comparar con muestra límite","Certificado, etiqueta y cantidad","Si hay falla: separar y pedir SCAR al proveedor"]).forEach(x=>ul.appendChild(el("li",null,x)));b.appendChild(ul)}
+  if(is_("qa")||is_("qc"))docSection(b,h,id);
   if(id==="exp"){pre=pre||{};const ai=aiCfg();
     h(ko?"자문단":"Panel");b.appendChild(tbl([ko?"자리":"Lugar",ko?"분야":"Áreas"],XGROUP.map(g=>[L(g.name),g.keys.map(k=>EXPERT[k][lang].replace(/ ?전문가$/,"").replace(/^experto en /,"")).join(", ")])));
     if(Z.issues.length&&!pre.q){h(ko?"이번 주 자문 후보":"Temas sugeridos");const row=el("div","irow");Z.issues.slice(0,5).forEach(is=>{const bt=el("button",null,typeName(is.type)+(is.part?" · "+is.part:""));bt.type="button";bt.addEventListener("click",()=>openDrawer("exp",{q:issueQ(is),keys:expertsFor(is)}));row.appendChild(bt)});b.appendChild(row)}
@@ -973,7 +1092,7 @@ cv.addEventListener("click",e=>{const r=cv.getBoundingClientRect();const x=(e.cl
 
 /* ---------- ui ---------- */
 function ui(){document.documentElement.lang=lang;$("tTitle").textContent=t("title");document.title=t("title");$("bLang").textContent=t("lang");$("tSetInfo").textContent=t("setInfo");$("tUrl").textContent=t("url");$("tKey").textContent=t("key");$("bSave").textContent=t("save");$("bDemo").textContent=t("demoBtn");$("tKb").textContent=t("kbLoad");$("kbMsg").textContent=(KB?t("kbOk").replace("{c}",KB.cases.length).replace("{p}",KB.pats.length)+(KB.weld&&KB.weld.notes.length?(lang==="ko"?" · 용접노트 ":" · notas ")+KB.weld.notes.length:"")+" · "+KB.name:t("kbNone"))+" — "+t("kbHint");$("hint").textContent=t("hint");
-  const sc=$("src");sc.textContent=S.demo?t("demo"):t("live");sc.className="src "+(S.demo?"demo":"live");$("upd").textContent=S.lastOk?t("upd")+": "+new Date(S.lastOk).toLocaleTimeString():"";if(ST)roster();const ae=document.activeElement;const busyForm=ae&&$("drawer").contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName);if($("drawer").classList.contains("open")&&S.open&&!busyForm&&S.open!=="exp")openDrawer(S.open);const ko=lang==="ko";$("tAiKey").textContent=ko?"Claude API 키 (전문가 자문실용 · 이 기기에만 저장)":"Clave API de Claude (sala de expertos · solo en este equipo)";$("tAiModel").textContent=ko?"모델":"Modelo";$("bInst").textContent=ko?"앱 설치":"Instalar";$("tInst").textContent=ko?"앱으로 설치: 안드로이드 크롬은 위의 '앱 설치' 버튼(또는 메뉴 → 홈 화면에 추가), 아이폰 사파리는 공유 → 홈 화면에 추가.":"Instalar como app: en Android (Chrome) use el botón 'Instalar' o menú → Agregar a pantalla de inicio; en iPhone (Safari) Compartir → Agregar a inicio.";
+  const sc=$("src");sc.textContent=S.demo?t("demo"):t("live");sc.className="src "+(S.demo?"demo":"live");$("upd").textContent=S.lastOk?t("upd")+": "+new Date(S.lastOk).toLocaleTimeString():"";if(ST)roster();const ae=document.activeElement;const busyForm=ae&&$("drawer").contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName);if($("drawer").classList.contains("open")&&S.open&&!busyForm&&!["exp","qa","qc"].includes(S.open))openDrawer(S.open);const ko=lang==="ko";$("tAiKey").textContent=ko?"Claude API 키 (전문가 자문실용 · 이 기기에만 저장)":"Clave API de Claude (sala de expertos · solo en este equipo)";$("tAiModel").textContent=ko?"모델":"Modelo";$("bInst").textContent=ko?"앱 설치":"Instalar";$("tInst").textContent=ko?"앱으로 설치: 안드로이드 크롬은 위의 '앱 설치' 버튼(또는 메뉴 → 홈 화면에 추가), 아이폰 사파리는 공유 → 홈 화면에 추가.":"Instalar como app: en Android (Chrome) use el botón 'Instalar' o menú → Agregar a pantalla de inicio; en iPhone (Safari) Compartir → Agregar a inicio.";
   $("aiMsg").textContent=ko?"키는 이 브라우저에만 저장되고 서버·GitHub에는 올라가지 않습니다. 자문 1건에 대략 US$0.1~0.3 (Sonnet, 웹 검색 최대 5회). Claude Console에서 월 사용 한도를 걸어두세요.":"La clave se guarda solo en este navegador. Cada consulta cuesta aprox. US$0.1–0.3 (Sonnet, hasta 5 búsquedas). Ponga un límite mensual en Claude Console."}
 $("bVz").addEventListener("click",()=>{openDrawer("sq");setTimeout(()=>{const hs=[...$("dBody").querySelectorAll("h3")].find(x=>/VAATZ/.test(x.textContent));if(hs)hs.scrollIntoView({behavior:"smooth"})},80)});
 $("bLang").addEventListener("click",()=>{lang=lang==="ko"?"es":"ko";try{localStorage.setItem("equipo-lang",lang)}catch(e){}if(Z)ST=status(Z);ui()});
