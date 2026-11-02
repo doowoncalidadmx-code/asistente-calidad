@@ -209,7 +209,7 @@ async function loadKb(file){const wb=XLSX.read(await file.arrayBuffer(),{type:"a
   const quiz=rows("용접퀴즈").map(r=>({id:g(r,"ID"),q:g(r,"질문"),qes:g(r,"Pregunta (ES)"),opt:g(r,"보기 (|로 구분)"),ans:g(r,"정답 번호"),exp:g(r,"해설"),exes:g(r,"Explicación (ES)"),opes:g(r,"Opciones (ES)")})).filter(x=>/^Q\d+/.test(x.id));
   if(!cases.length)throw new Error("사례목록 sheet");const m4=rows("4M신고기준").map(r=>({id:g(r,"ID"),k:g(r,"4M"),name:g(r,"변경 유형"),rule:g(r,"신고 기준"),ex:g(r,"예시 · 정의"),exc:g(r,"제외사항"),isir:g(r,"ISIR"),docs:g(r,"제출서류"),tes:g(r,"Tipo (ES)"),res:g(r,"Criterio (ES)")})).filter(x=>/^M\d+/.test(x.id));
   const vp=rows("검사POINT").map(r=>({id:g(r,"ID"),ko:g(r,"검사 POINT (기준서 문구)"),es:g(r,"Punto de inspección (ES)"),types:g(r,"불량유형 키 (앱)").split(/\s+/).filter(Boolean)})).filter(x=>/^V\d+/.test(x.id));
-  KB={cases,pats,weld:{notes,diag,quiz},m4,vp,name:file.name,at:Date.now()};try{localStorage.setItem("equipo-kb",JSON.stringify(KB))}catch(e){}}
+  KB=Object.assign({cases,pats,weld:{notes,diag,quiz},m4,vp,name:file.name,at:Date.now()},kb18Parse(rows,g));try{localStorage.setItem("equipo-kb",JSON.stringify(KB))}catch(e){}}
 /* which cause patterns a defect type usually points to (P-numbers of the library) */
 const TYPE2P={tiro_corto:["P11","P14","P6"],mancha_gas:["P15","P14","P16"],rebaba:["P11","P15"],exceso_resina:["P11"],marca_botador:["P16","P11"],dano_maquina:["P11"],faltante:["P1"],insertos:["P1","P3"],filtro:["P1"],flange_falta:["P1"],
   equivocada:["P2"],torque:["P3"],mal_ensamble:["P3","P20"],jig:["P3"],crimpado:["P17","P19","P3","P6"],flange_mal:["P3"],valvula:["P3","P13"],fuga:["P13","P3","P20"],quemada:["P4","P5"],sold_debil:["P4"],falta_sold:["P4"],mala_sold:["P4","P5"],
@@ -304,7 +304,7 @@ async function askAI(text,images,opt){opt=opt||{};const c=aiCfg();if(!c.key)thro
   let out=[],guard=0,model=c.model||DEF_MODEL;
   while(guard++<4){const messages=[{role:"user",content}].concat(out.length?[{role:"assistant",content:out}]:[]);
     const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model,max_tokens:opt.sys?6000:4000,system:opt.sys||SYS[lang]||SYS.ko,messages,tools:[{type:"web_search_20250305",name:"web_search",max_uses:opt.search||5}]})});
+      body:JSON.stringify({model,max_tokens:opt.sys?6000:4000,system:(opt.sys||SYS[lang]||SYS.ko)+kbContext(),messages,tools:[{type:"web_search_20250305",name:"web_search",max_uses:opt.search||5}]})});
     let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error((j.error&&j.error.message)||("HTTP "+r.status));
     out=out.concat(j.content||[]);if(j.stop_reason!=="pause_turn")break}
   let txt2="";const src=[],idx={};let n=0;
@@ -393,8 +393,8 @@ const SYS8D={ko:"너는 두원냉기 멕시코 품질 정병훈 과장의 8D·�
  en:"You are the 8D drafting assistant of the Quality Manager at Doowon Refrigeration México (customers KIA México and HMGMA). Rules: mark causes [Confirmed]/[Candidate] with a verification method; never invent data, dates, quantities or names (write 'TBC'); separate Occurrence and Outflow causes; no 'operator error' as a sole cause; visual inspection is containment only, permanent actions are preventive/poka-yoke. Use the HMGMA/KIA Problem Solving Panel structure: Header (panel no., vehicle, title = part + symptom, Department (Supplier): Doowon MX) / Problem Description (date, body no., process location, customer PIC, QTY) / Containment Result table by location – customer plant, Glovis CC or US warehouse, supplier – with Total/OK/NG, plus Clean Point (first date/lot guaranteed OK and how it is marked) / Root Cause Analysis (5-Why for Occurrence and Outflow, with evidence) / Short Term Countermeasure (bullets, each with a target date) / Long Term Countermeasure (poka-yoke, equipment, PFMEA/CP/work instruction/appearance inspection standard revision, each with a target date) / Supply Chain (e.g. Supplier (MX) → Warehouse (US) → HMGMA) / Quality Chargeback inputs (investigation and repair hours and manpower, TBC) / Effectiveness check (60 days) and horizontal deployment. If the change is a 4M change, state whether HKMC 4M notification and ISIR apply. Use attached case-library and internal defect history as evidence and cite IDs. Write in English, concise bullet style."};
 function vzQuestion(r){const ko=lang==="ko";const ty=guessType(r.defect);const fake={type:ty,part:r.part,oproc:"",W4:[],ser:[],det:{},mach:""};const m=matchIssue(fake)||{pats:[],cases:[]};
   return {ty,m,text:`${ko?"고객 불량 (VAATZ)":"Reclamo de cliente (VAATZ)"}\n- ${ko?"관리번호":"Folio"}: ${r.no||"-"} / ${ko?"일자":"Fecha"}: ${r.ts?new Date(r.ts).toLocaleDateString():"-"} / ${r.site||""} ${r.car||""}\n- ${ko?"품번·품명":"Parte"}: ${r.part||"-"} ${r.pname||""}\n- ${ko?"불량 내용":"Defecto"}: ${r.defect||"-"} / ${ko?"수량":"Cant."}: ${r.qty}\n`+
-   (internalFor(r.part)?"- "+internalFor(r.part)+"\n":"")+(m.pats.length?`- ${ko?"사례집 패턴":"Patrones"}: ${m.pats.map(p=>p.id+" "+p.name+" (첫 확인: "+p.check+")").join(" / ")}\n`:"")+(m.cases.length?`- ${ko?"유사 사례":"Casos"}: ${m.cases.map(c=>c.id+" "+c.ph.slice(0,80)+" → "+(c.cm||"").slice(0,120)).join(" / ")}\n`:"")+(vpFor(ty).length?`- ${ko?"외관 검사기준서 문구":"Texto del estándar"}: ${vpFor(ty).map(v=>v.ko+" / "+v.es).join(" ; ")}\n`:"")}}
-function vzTemplate(r){const q=vzQuestion(r);const fake={type:q.ty,part:r.part,oproc:"",W4:[isoWeek(Date.now())],ser:[r.qty],det:{},mach:"",m:q.m};
+   kbPartText(r.part)+(internalFor(r.part)?"- "+internalFor(r.part)+"\n":"")+(m.pats.length?`- ${ko?"사례집 패턴":"Patrones"}: ${m.pats.map(p=>p.id+" "+p.name+" (첫 확인: "+p.check+")").join(" / ")}\n`:"")+(m.cases.length?`- ${ko?"유사 사례":"Casos"}: ${m.cases.map(c=>c.id+" "+c.ph.slice(0,80)+" → "+(c.cm||"").slice(0,120)).join(" / ")}\n`:"")+(vpFor(ty).length?`- ${ko?"외관 검사기준서 문구":"Texto del estándar"}: ${vpFor(ty).map(v=>v.ko+" / "+v.es).join(" ; ")}\n`:"")}}
+function vzTemplate(r){const q=vzQuestion(r);const fake={type:q.ty,part:r.part,oproc:"",W4:[isoWeek(Date.now())],ser:[r.qty],det:{},mach:"",m:q.m,cust:true};
   return draft8D(fake).replace(/^[^\n]*\n/,(lang==="ko"?"8D 초안 – 고객 불량 ":"Borrador 8D – reclamo ")+(r.no||"")+" / "+(r.part||"")+" / "+(r.defect||"")+"\n")+"\n\n"+(lang==="ko"?"■ 입력 정보\n":"■ Datos\n")+q.text}
 async function vzDraft(r,box,en,docs){box.textContent="";const ko=lang==="ko";if(!aiCfg().key&&!r){box.appendChild(el("p","msg",ko?"통보서 PDF·사진을 읽으려면 ⚙에 Claude API 키가 필요합니다. 목록의 건별 '대책서 초안'은 키 없이도 템플릿으로 만듭니다.":"Para leer el aviso PDF/foto se necesita la clave API en ⚙."));return}
   if(!aiCfg().key){const pre=el("pre");pre.textContent=en?panelTemplate(r):vzTemplate(r);box.appendChild(el("p","msg",ko?"API 키가 없어 사례집 기반 템플릿 초안입니다. ⚙에 키를 넣으면 Claude가 직접 씁니다.":"Sin clave API: borrador con plantilla."));box.appendChild(pre);const bc=el("button",null,t("copy"));bc.type="button";bc.addEventListener("click",()=>copyTxt(pre.textContent,bc));box.appendChild(bc);return}
@@ -517,7 +517,7 @@ function status(Z){const out={};const tl=(ko,es)=>({ko,es});
   docStatus(out,tl);
   const LO={hi:3,mid:2,ok:1,idle:0};const mg=(a,b)=>{const top=LO[b.lv]>LO[a.lv]?b:a;return {lv:top.lv,short:top.short,long:{ko:a.long.ko+"\n"+b.long.ko,es:a.long.es+"\n"+b.long.es}}};
   if(S.aiBusy)out.exp=Object.assign({},out.exp,{lv:"mid",short:tl("전문가 회의 중…","Expertos trabajando…")});else if(S.aiLast&&Date.now()-S.aiLast.at<15*6e4)out.exp=Object.assign({},out.exp,{lv:"ok",short:tl("자문 완료 ✓ 눌러서 보기","Respuesta lista ✓")});
-  return Object.assign(out,{insp:mg(out.insp,out.iqc),ana:mg(out.ana,out.rep),d8:mg(out.d8,out.kb),sq:VZ.files.length?mg(out.cus,out.sup):mg(out.sup,out.cus),fu:mg(out.chg,out.eff)})}
+  eoStatus(out,tl);return Object.assign(out,{insp:mg(out.insp,out.iqc),ana:mg(out.ana,out.rep),d8:mg(out.d8,out.kb),sq:VZ.files.length?mg(out.cus,out.sup):mg(out.sup,out.cus),fu:mg(out.chg,out.eff)})}
 // who hands work to whom (only when there is something to pass)
 function edges(Z){const e=[];if(Z.today.length)e.push(["insp","ana"]);if(Z.alerts.some(a=>a.st!=="ok"))e.push(["ana","d8"]);if(Z.issues.length)e.push(["d8","exp"]);if(Z.sup.length)e.push(["sq","insp"]);if(Z.iqc.some(o=>o.strong))e.push(["insp","sq"]);
   if(Z.chg.some(x=>x.w.up))e.push(["fu","ana"]);if(Z.eff.some(x=>x.e.st==="bad"||x.e.st==="weak"))e.push(["fu","d8"]);if(Z.d8.length)e.push(["d8","ana"]);if(VZ.files.length)e.push(["sq","d8"]);if(Z.issues.length)e.push(["d8","qa"]);if(Z.top3.length)e.push(["ana","qc"]);if(Z.chg.length)e.push(["fu","qa"]);return e}
@@ -824,13 +824,13 @@ function anaData(){const ko=true;const L=[heatSummary()];
 const SYSANA=`너는 두원냉기 멕시코 품질팀의 분석 담당이다. 공정검사원들이 히트맵 앱에 기록한 불량 데이터로 공정 분석 보고서 초안을 쓴다. 독자는 정병훈 과장(품질)과 생산·생기 담당.
 규칙: 1) 데이터에 있는 숫자만 쓰고 없는 것은 [확인 필요]. 2) 관리도 신호는 앱이 계산한 것만 쓰고 직접 계산하지 않는다. 3) 원인은 [후보]로 쓰고, 사례집 패턴(P번호)·사례(C번호)가 오면 근거로 단다. 4) 작업자 실수 단독 원인 금지. 5) 표는 마크다운 표.
 현장 조건: 냉각탑 공급수 20℃대 고정, 금형반 없음, 흡기 커버·바디 외관품, 멕시코 경수, 재질 PP-TD40(사출)·PP-TD30(융착)·Al3003(배관). 불량은 발생 공정 기준으로 본다.
-구성: 1. 한 줄 결론 + 요약 3줄 / 2. 설비·공정별 현황 표 (| 설비·공정 | 최근 7일 | 8주 평균 | 배수 | 주요 불량 | 상태 |) / 3. 이상 추세 (관리도 신호)와 의미 / 4. 우선 과제 Top 3 – 각각 원인 후보, 첫 확인 항목, 참고 사례 / 5. 이번 주 조치 제안 표 (| 조치 | 담당 | 기한 |, 담당·기한은 [확인 필요]) / 6. 확인 필요.
+구성: 1. 한 줄 결론 + 요약 3줄 / 2. 설비·공정별 현황 표 (| 설비·공정 | 최근 7일 | 8주 평균 | 배수 | 주요 불량 | 상태 |) / 3. 이상 추세 (관리도 신호)와 의미 / 4. 우선 과제 Top 3 – 각각 원인 후보, 첫 확인 항목, 참고 사례 / 5. 이번 주 조치 제안 표 (| 조치 | 담당 | 기한 |, 담당은 팀 참조 자료의 라인 배치·업무분장에서 고르고 없으면 [확인 필요], 기한은 [확인 필요]) / 6. 확인 필요.
 출력 언어: 한국어.`;
 function anaOffline(){const o=["공정 분석 보고서 (자동 집계) – "+Z.wk,"※ API 키 없이 데이터만으로 만든 보고서입니다.",""];
   o.push("■ 설비·공정별 현황 (최근 7일 vs 이전 8주 평균, 가중점수)");o.push("| 설비·공정 | 최근 7일 | 8주 평균 | 배수 | 주요 불량 | 상태 |");o.push("|---|---|---|---|---|---|");
   Z.alerts.slice(0,10).forEach(a=>o.push(`| ${a.key} | ${fmt(a.cur)} | ${fmt(a.base)} | ${a.ratio===Infinity?"신규":"×"+a.ratio.toFixed(1)} | ${typeName(a.topType)} | ${t("lv")[a.st==="hi"?"hi":a.st==="mid"?"mid":"ok"]} |`));
   const sg=trendSignals();o.push("");o.push("■ 이상 추세 (관리도 규칙)");if(sg.length)sg.forEach(s=>o.push("  - "+trendText([s])));else o.push("  - 없음");
-  o.push("");o.push("■ 이번 주 Top 3");Z.top3.forEach((x,i)=>o.push(`  ${i+1}) ${typeName(x.type)} ${x.part||""} – ${fmt(x.q)}개 (${procName(x.proc)})`));
+  o.push("");o.push("■ 이번 주 Top 3");Z.top3.forEach((x,i)=>o.push(`  ${i+1}) ${typeName(x.type)} ${x.part||""} – ${fmt(x.q)}개 (${procName(x.proc)}${lineTag(x.proc)})`));
   if(Z.issues.length){o.push("");o.push("■ 원인 후보 (사례집)");Z.issues.slice(0,3).forEach(i=>{o.push(`  - ${typeName(i.type)} ${i.part||""}`);(i.m&&i.m.pats||[]).forEach(p=>o.push(`      [후보 ${p.id}] ${p.name} – 첫 확인: ${p.check}`))})}
   o.push("");o.push("■ 확인 필요: 담당·기한, 현장 실측값");return o.join("\n")}
 function anaSection(b,h,ko){const sg=trendSignals();
@@ -972,11 +972,11 @@ function draft8D(is){const ko=lang==="ko";const m=is.m||{pats:[],cases:[]};const
   const out=[];const H=x=>out.push("","■ "+x);const B=x=>out.push("  - "+x);
   out.push(L2(`8D 초안 – ${tn}${is.part?" / "+is.part:""} (${procName(is.oproc)}${is.mach?" · "+is.mach:""})`,`Borrador 8D – ${tn}${is.part?" / "+is.part:""} (${procName(is.oproc)}${is.mach?" · "+is.mach:""})`));
   out.push(L2("※ 자동 초안: 원인은 [후보]. 현장 확인 후 확정하세요.","※ Borrador automático: las causas son [candidatas]. Confirmar en piso."));
-  H(L2("D1 팀","D1 Equipo"));B(L2("품질(리더) / 생산 / 보전 / 순회검사 – 이름 확인 필요","Calidad (líder) / Producción / Mantenimiento / Inspección – nombres por confirmar"));
-  H(L2("D2 문제","D2 Problema"));B(L2(`현상: ${tn}${is.part?" – "+is.part:""}`,`Fenómeno: ${tn}${is.part?" – "+is.part:""}`));B(L2(`주간 추이(개): ${ser}`,`Tendencia semanal (pzs): ${ser}`));if(det)B(L2(`다른 공정에서 발견(유출): ${det}`,`Detectado en otros procesos (fuga): ${det}`));B(L2("고객 영향: 확인 필요","Impacto en cliente: por confirmar"));
+  H(L2("D1 팀","D1 Equipo"));{const d1=d1Team(is,is.cust);if(d1)d1.forEach(B);else B(L2("품질(리더) / 생산 / 보전 / 순회검사 – 이름 확인 필요","Calidad (líder) / Producción / Mantenimiento / Inspección – nombres por confirmar"))}
+  H(L2("D2 문제","D2 Problema"));B(L2(`현상: ${tn}${is.part?" – "+is.part:""}`,`Fenómeno: ${tn}${is.part?" – "+is.part:""}`));B(L2(`주간 추이(개): ${ser}`,`Tendencia semanal (pzs): ${ser}`));if(det)B(L2(`다른 공정에서 발견(유출): ${det}`,`Detectado en otros procesos (fuga): ${det}`));B(L2("고객 영향: 확인 필요","Impacto en cliente: por confirmar"));{const pi=kbPartText(is.part);if(pi)pi.trim().split("\n").forEach(z=>B(z.replace(/^- /,"")))}
   H(L2("D3 봉쇄","D3 Contención"));m.pats.forEach(p=>p.temp&&p.temp!=="–"&&B(`[${p.id}] ${p.temp}`));B(L2("재고·WIP·운송 중 선별 범위와 결과 기록","Registrar alcance y resultado de selección (inventario, WIP, tránsito)"));
   H(L2("D4 원인 분석","D4 Análisis de causa"));m.pats.forEach(p=>{B(`[${L2("후보","Candidata")} ${p.id} ${p.name}] ${L2("의심 근거","Cuándo sospechar")}: ${p.when}`);B(`   ${L2("확인 방법","Verificación")}: ${p.check}`)});
-  m.cases.forEach(c=>B(`${L2("유사 사례","Caso similar")} ${c.id} (${c.st}): ${c.occ.slice(0,160)}${c.occ.length>160?"…":""}`));B(L2("발생 원인과 유출 원인을 따로 확정할 것 (작업자 단독 원인 금지)","Separar causa de ocurrencia y de fuga (no solo 'error del operador')"));
+  m.cases.forEach(c=>B(`${L2("유사 사례","Caso similar")} ${c.id} (${c.st}): ${c.occ.slice(0,160)}${c.occ.length>160?"…":""}`));B(L2("발생 원인과 유출 원인을 따로 확정할 것 (작업자 단독 원인 금지)","Separar causa de ocurrencia y de fuga (no solo 'error del operador')"));{const eo=is.part?eoFor(is.part).filter(e=>{const ts=eoTs(e.date);return ts&&Date.now()-ts<180*864e5&&ts<=Date.now()}):[];eo.forEach(e=>B(L2(`[후보 4M] 최근 변경: ${eoLine(e)} – 적용 전후 품질 비교`,`[Candidata 4M] Cambio reciente: ${eoLine(e)} – comparar antes/después`)))}
   H(L2("D5·D6 영구 대책","D5·D6 Acciones permanentes"));m.pats.forEach(p=>p.perm&&B(`[${p.id}] ${p.perm}`));m.cases.forEach(c=>c.cm&&c.cm.length>3&&!/시트 참조/.test(c.cm)&&B(`${L2("참고","Ref.")} ${c.id}: ${c.cm.slice(0,180)}${c.cm.length>180?"…":""}`));B(L2("PFMEA·CP·작업표준 개정일 기입","Fechas de revisión PFMEA·CP·instrucción de trabajo"));
   H(L2("D7 재발 방지","D7 Prevención"));vpFor(is.type).slice(0,2).forEach(v=>B(L2(`외관 검사기준서 검사 POINT: "${v.ko}" (중점검사항목 사진·REV 개정)`,`Estándar de apariencia – punto: "${v.es}" (foto y revisión)`)));B(L2("대책이 4M 변경이면 HKMC 4M 신고(VAATZ)·ISIR 여부 확인 (변경점 담당)","Si la acción es un cambio 4M: reporte en VAATZ / ISIR"));B(L2(`수평 전개: 같은 공정(${procName(is.oproc)})의 유사 설비·품번`,`Despliegue horizontal: equipos y números de parte similares en ${procName(is.oproc)}`));B(L2("효과 확인: 4주 연속 주간 추이 (불량 앱·스크랩 DB), 고객 요구 시 60일","Verificación: 4 semanas seguidas (app y base de scrap); 60 días si el cliente lo pide"));
   m.cases.forEach(c=>c.lesson&&!/작성 중$/.test(c.lesson)&&B(`${L2("교훈","Lección")} ${c.id}: ${c.lesson}`));
@@ -1165,7 +1165,7 @@ function docOffline(dept,tk,memo,inp,lg){const H=tk.fmt.split(":").slice(1).join
   H.forEach(x=>{o.push("■ "+x);o.push("  - "+(ko?"[확인 필요]":"[por confirmar]"));o.push("")});
   if(memo)o.push((ko?"■ 메모: ":"■ Nota: ")+memo);if(inp.notes.length)o.push((ko?"■ 받은 자료: ":"■ Material: ")+inp.notes.join(", "));if(inp.text)o.push((ko?"■ 자료에서 읽은 글 (앞부분)\n":"■ Texto leído\n")+inp.text.slice(0,1500));
   const v=dept==="qc"&&tk.id==="vstd"&&KB&&KB.vp?KB.vp:null;if(v){o.push("");o.push("■ 검사 POINT 문구 후보");v.forEach(p=>o.push(`  - ${p.ko} / ${p.es}`))}
-  return o.join("\n")}
+  kbOffline(tk,o,memo,ko);return o.join("\n")}
 function docResult(dept,item,box){box.textContent="";const d=el("div","ans");d.appendChild(el("div","msg",new Date(item.at).toLocaleString()+" · "+(item.model||"")));
   const tx=el("div","atext doc");tx.innerHTML=mdToHtml(item.text);d.appendChild(tx);
   if(item.src&&item.src.length){d.appendChild(el("b",null,"Sources"));const ol=el("ol");item.src.forEach(s2=>{if(!/^https?:\/\//.test(s2.url))return;const li=el("li");const a=el("a",null,s2.title);a.href=s2.url;a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);ol.appendChild(li)});d.appendChild(ol)}
@@ -1189,7 +1189,7 @@ function docSection(b,h,dept){const ko=lang==="ko";const T=DOCT[dept];
     const title=(ko?tk.ko:tk.es)+" "+new Date().toISOString().slice(0,10);
     if(!aiCfg().key){const item={dept,task:tk.id,title,text:docOffline(dept,tk,memo,inp,lg),at:Date.now(),model:"template"};DOCH.unshift(item);saveDocs();docResult(dept,item,out);refreshView();return}
     out.textContent="";out.appendChild(el("p","msg",(ko?"작성 중… (30초~2분) 읽은 자료: ":"Redactando… material: ")+(inp.notes.join(", ")||"-")));S.docBusy=dept;refreshView();
-    try{const q=`[과장님 지시]\n${memo||"(메모 없음)"}\n\n[받은 자료 목록] ${inp.notes.join(", ")||"-"}\n`+(inp.text?`\n[자료에서 읽은 글]\n${inp.text}\n`:"")+(iH.checked?"\n"+heatSummary()+"\n":"")+docExtra(tk)+calc+`\n\n위 자료로 '${tk.ko}' 양식 초안을 작성해줘.`;
+    try{const q=`[과장님 지시]\n${memo||"(메모 없음)"}\n\n[받은 자료 목록] ${inp.notes.join(", ")||"-"}\n`+(inp.text?`\n[자료에서 읽은 글]\n${inp.text}\n`:"")+(iH.checked?"\n"+heatSummary()+"\n":"")+docExtra(tk,memo+"\n"+(inp.text||"").slice(0,20000))+calc+`\n\n위 자료로 '${tk.ko}' 양식 초안을 작성해줘.`;
       const res=await askAI(q,inp.imgs,{sys:docSys(dept,tk,lg),search:1,docs:inp.pdfs});const item={dept,task:tk.id,title,text:res.text,src:res.src,at:res.at,model:res.model};DOCH.unshift(item);saveDocs();docResult(dept,item,out)}
     catch(e){out.textContent="";out.appendChild(el("p","msg",(ko?"오류: ":"Error: ")+e.message+aiErrHint(e.message)))}finally{S.docBusy=null;refreshView()}});
   const mine=DOCH.filter(x=>x.dept===dept);if(mine.length){h(ko?"최근 작성":"Recientes");mine.slice(0,8).forEach(x=>{const d=el("div","icard");d.appendChild(el("b",null,x.title));d.appendChild(el("div","msg",new Date(x.at).toLocaleString()+" · "+(x.model||"")));
@@ -1199,6 +1199,114 @@ function docStatus(out,tl){["qa","qc"].forEach(d=>{const busy=S.docBusy===d;cons
   out[d]={lv:busy?"mid":recent?"ok":"idle",short:busy?tl("작성 중…","Redactando…"):recent?tl("초안 완료 ✓ "+last.title.slice(0,16),"Borrador listo ✓"):tl("자료 주시면 작성합니다 zZ","Esperando material zZ"),
     long:d==="qa"?tl("품질보증 담당입니다. 자료(PDF·PPT·워드·엑셀·사진)와 메모를 넘기면 고객 대책서(8D), HMGMA·KIA Panel, 4M 변경 신고서(HKMC 기준), 고객 회신 메일, 협력사 시정요구서(SCAR), 상부 보고 한 장을 양식대로 씁니다. 결과는 복사·엑셀·워드로 받을 수 있습니다.","Aseguramiento de calidad: con el material y una nota redacto 8D, Panel HMGMA/KIA, reporte 4M (HKMC), correo al cliente, SCAR y reporte ejecutivo. Se puede copiar o guardar en Excel/Word.")
      :tl("품질관리 담당입니다. 자료와 메모를 넘기면 협의록, 외관 검사기준서, 현장 작업·검사 지시서(스페인어), 주간 PPM 코멘트, SPC·Cpk 결과 보고, 현장 교육 1장을 양식대로 씁니다. 결과는 복사·엑셀·워드로 받을 수 있습니다.","Control de calidad: redacto minutas, estándar de inspección visual, hojas de instrucción en español, comentario de PPM semanal, reporte SPC/Cpk y capacitación de 1 hoja.")}})}
+/* ==== kb18 ==== */
+/* ---------- v2.1: team reference data from case library v1.8 (org, line assignment, 4M/EO status, BOM part master, gauges) ----------
+   Nothing here is hardcoded: everything comes from the case library (or the Lista maestra) the user loads on this device. */
+function kb18Parse(rows,g){
+  const org=rows("조직").map(r=>({id:g(r,"ID"),name:g(r,"이름"),pos:g(r,"직책"),area:g(r,"영역"),shift:g(r,"근무"),duty:g(r,"주요 업무"),rep:g(r,"보고 대상"),key:g(r,"역할키")})).filter(x=>/^O\d+/.test(x.id));
+  const lines=rows("라인배치").map(r=>({line:g(r,"라인"),proc:g(r,"공정키"),name:g(r,"공정"),det:g(r,"세부 라인"),t1:g(r,"순회검사 T1"),t2:g(r,"순회검사 T2")})).filter(x=>x.line);
+  const eo=rows("4M_EO현황").map(r=>({id:g(r,"ID"),model:g(r,"차종"),kind:g(r,"구분"),oem:g(r,"OEM EO"),dcc:g(r,"DCC 설변"),date:g(r,"일자"),pns:g(r,"대상 품번"),name:g(r,"품명"),desc:g(r,"변경 내용"),st:g(r,"상태"),sup:g(r,"공급사"),tbc:g(r,"확인 필요")})).filter(x=>/^E\d+/.test(x.id));
+  const eoh=rows("EO이력").map(r=>({model:g(r,"차종"),rev:g(r,"Rev"),oem:g(r,"OEM EO"),dcc:g(r,"DCC 설변"),date:g(r,"일자"),desc:g(r,"변경 내용")})).filter(x=>x.oem);
+  const pn=rows("품번").map(r=>({model:g(r,"차종"),spec:g(r,"사양(시트)"),lv:g(r,"레벨"),cust:g(r,"고객 품번"),dcc:g(r,"사내 품번"),name:g(r,"품명"),mat:g(r,"재질"),th:g(r,"두께"),wt:g(r,"중량(g)"),weld:g(r,"융착"),par:g(r,"상위 품번"),note:g(r,"비고")})).filter(x=>x.cust||x.dcc);
+  const gauges=rows("측정기").map(r=>({id:g(r,"관리번호"),eq:g(r,"장비"),rng:g(r,"범위(분해능)"),mk:g(r,"제조사"),mdl:g(r,"모델"),per:g(r,"교정 주기")})).filter(x=>x.id);
+  return {org,lines,eo,eoh,pn,gauges}}
+const normP=s=>String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+// "28130-GG300/400/500, 28140-GG300" or "28210-GG000 / GG050" -> full part numbers
+function expandPN(str){const out=[];String(str||"").replace(/\s*\/\s*/g,"/").split(/[,;\s]+/).forEach(tk=>{const ps=tk.split("/").filter(Boolean);const base=ps[0]||"";ps.forEach((p,i)=>{let v=p;if(i&&p.length<base.length)v=base.slice(0,base.length-p.length)+p;const n=normP(v);if(n.length>=8&&/\d/.test(n))out.push(n)})});return [...new Set(out)]}
+let PNX=null;function pnIdx(){if(PNX&&PNX.src===KB)return PNX;const m={};((KB&&KB.pn)||[]).forEach(r=>{[r.cust,r.dcc].forEach(k=>{const n=normP(k);if(n.length>=6)(m[n]=m[n]||[]).push(r)})});
+  const kids={};((KB&&KB.pn)||[]).forEach(r=>{const p=normP(r.par);if(p)(kids[p]=kids[p]||new Set()).add(normP(r.cust||r.dcc))});PNX={src:KB,m,kids};return PNX}
+function partInfo(pn){const n=normP(pn);if(n.length<6)return null;const X=pnIdx();let rs=X.m[n];
+  if(!rs){const k=Object.keys(X.m).find(k=>k.length>=8&&(k.startsWith(n)||n.startsWith(k)));rs=k?X.m[k]:null}if(!rs||!rs.length)return null;
+  const r=rs[0],chain=[];let p=r.par,guard=0;while(p&&guard++<6){const pr=(X.m[normP(p)]||[])[0];chain.push(pr?`${p} ${pr.name}`:p);p=pr?pr.par:""}
+  const models=[...new Set(rs.map(x=>x.model))];const specs=[...new Set(rs.map(x=>x.spec))].slice(0,3);
+  return {pn:r.cust||r.dcc,dcc:r.dcc,name:r.name,mat:r.mat&&r.mat!=="-"?r.mat:"",th:r.th&&r.th!=="-"?r.th:"",weld:r.weld,chain,models,specs,note:r.note}}
+// ancestors of a part (so an EO on the assembly also shows on its sub-parts) and descendants (heatmap records on sub-parts count for an EO on the assembly)
+function pnUp(n){const X=pnIdx();const out=[n];let cur=n,g=0;while(g++<6){const r=(X.m[cur]||[])[0];if(!r||!r.par)break;cur=normP(r.par);out.push(cur)}return out}
+function pnDown(set){const X=pnIdx();const out=new Set(set);let fr=[...set],g=0;while(fr.length&&g++<6){const nx=[];fr.forEach(p=>(X.kids[p]||[]).forEach(k=>{if(!out.has(k)){out.add(k);nx.push(k)}}));fr=nx}
+  // the same part is often listed under both customer and DCC numbers
+  [...out].forEach(k=>(X.m[k]||[]).forEach(r=>{[r.cust,r.dcc].forEach(z=>{const q=normP(z);if(q.length>=6)out.add(q)})}));return out}
+const EO_KEY="equipo-eo";let EOL=null;try{const o=JSON.parse(localStorage.getItem(EO_KEY)||"null");if(o&&o.list)EOL=o}catch(e){}
+function eoList(){return (EOL&&EOL.list)||(KB&&KB.eo)||[]}
+function eoTs(d){if(!d)return 0;if(d instanceof Date)return +d;const s=String(d).trim();const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return +new Date(+m[1],+m[2]-1,+m[3]);if(/^\d{5}$/.test(s))return Math.round((+s-25569)*864e5);return 0}
+function eoOpen(e){return /대기|확인|필요|pending|tbd|tbc|진행|step [1-7]/i.test(e.st||"")||!e.st}
+function eoFor(pn){const up=new Set(pnUp(normP(pn)));if(!up.size)return [];return eoList().filter(e=>expandPN(e.pns).some(n=>up.has(n)))}
+function eoImpact(e){const D=864e5,ts=eoTs(e.date);if(!ts||!S.recs||!S.recs.length)return null;const tg=pnDown(new Set(expandPN(e.pns)));if(!tg.size)return null;
+  // compare the 4 weeks before the change with up to 4 weeks after it – only when the heatmap data covers the weeks before
+  const now=Date.now(),first=Math.min(...S.recs.map(r=>r.ts));if(ts>now)return {fut:1};if(first>ts-21*D)return {old:1};
+  const rs=S.recs.filter(r=>r.part&&clsOf(r.type)!=="S"&&tg.has(normP(r.part)));const aw=Math.min(28,(now-ts)/D);if(aw<3)return {early:1};
+  const sum=(a,b)=>rs.filter(r=>r.ts>=a&&r.ts<b).reduce((s,r)=>s+r.qty,0);const bw=Math.min(28,(ts-first)/D);const before=sum(ts-bw*D,ts)/(bw/7);const after=sum(ts,ts+aw*D)/(aw/7);
+  const ty={};rs.filter(r=>r.ts>=ts&&r.ts<ts+aw*D).forEach(r=>ty[r.type]=(ty[r.type]||0)+r.qty);const top=Object.entries(ty).sort((a,b)=>b[1]-a[1])[0];
+  return {n:rs.length,before,after,up:after>=3&&after>Math.max(1,before)*1.5,top:top?top[0]:""}}
+function eoCell(e,w,ko){const d=document.createElement("div");d.appendChild(pill((e.st||"Pending").split(/[·,]/)[0].slice(0,14),eoOpen(e)?"#D97706":"#0F9D6B").node);
+  const m=el("div","msg");m.style.marginTop="4px";m.textContent=!w?"":w.old?(ko?"히트맵 기록 이전":"antes del mapa"):w.fut?(ko?"적용 예정":"por aplicar"):w.early?(ko?"적용 직후":"recién aplicado"):!w.n?(ko?"관련 불량 없음":"sin defectos"):`${ko?"불량/주":"def/sem"} ${fmt(w.before)}→${fmt(w.after)}${w.up?" ↑":""}`;
+  if(w&&w.up){m.style.color="#FF4D6A";m.style.fontWeight="700"}d.appendChild(m);return {node:d}}
+function lineOf(proc){return ((KB&&KB.lines)||[]).find(l=>l.proc===proc)||null}
+function orgBy(key){return ((KB&&KB.org)||[]).filter(o=>o.key===key&&!/채용/.test(o.name))}
+function nm(o){return o?o.name.replace(/\s*\(.*\)$/,""):""}
+/* D1 team for an 8D from the org sheet: quality lead, the owner by issue source, and the line's patrol inspectors */
+function d1Team(is,cust){const ko=lang==="ko";if(!KB||!KB.org||!KB.org.length)return null;const L2=(a,b)=>ko?a:b;
+  const dir=orgBy("director")[0],qa=orgBy("qa_leader")[0],qaa=orgBy("qa_assistant")[0],qc=orgBy("qc_leader")[0],inc=orgBy("incoming")[0];const ln=lineOf(is.oproc);const out=[];
+  out.push(L2(`리더: ${nm(dir)||"[확인 필요]"} (품질)`,`Líder: ${nm(dir)||"[por confirmar]"} (Calidad)`));
+  if(cust)out.push(L2(`고객 대응·대책서: ${nm(qa)} (QA) / ${nm(qaa)} (VAATZ·대책서 지원)`,`Cliente y 8D: ${nm(qa)} (QA) / ${nm(qaa)} (VAATZ, apoyo 8D)`));
+  out.push(L2(`공정 품질·QRQC·수평전개: ${nm(qc)} (QC)`,`Calidad de proceso, QRQC, despliegue: ${nm(qc)} (QC)`));
+  if(ln)out.push(L2(`라인 ${ln.line} ${ln.name} 순회검사: ${ln.t1} (주간)${ln.t2&&ln.t2!=="-"?" / "+ln.t2+" (야간)":""}`,`Línea ${ln.line} ${ln.name} – inspección: ${ln.t1} (T1)${ln.t2&&ln.t2!=="-"?" / "+ln.t2+" (T2)":""}`));
+  if(is.oproc==="prov"||is.type==="kd")out.push(L2(`수입검사·협력사: ${nm(inc)}`,`Recibo y proveedor: ${nm(inc)}`));
+  if(cust){const rs=orgBy("resident");if(rs.length)out.push(L2(`고객 상주 (선별·출하 샘플링): ${rs.map(nm).join(", ")} – 해당 고객 확인`,`Residentes (selección, muestreo): ${rs.map(nm).join(", ")} – confirmar cliente`))}
+  out.push(L2("생산·보전 담당: [확인 필요] (조직표에 없음)","Producción y mantenimiento: [por confirmar]"));return out}
+const eoV=x=>x&&!/^(-|N\/A|TBD|TBC)$/i.test(x)?x:"";
+function eoLine(e){const id=[eoV(e.oem),eoV(e.dcc)&&(eoV(e.oem)?"("+e.dcc+")":e.dcc)].filter(Boolean).join(" ");return `${e.kind}${id?" "+id:""} ${eoV(e.date)||"[일자 확인]"} ${e.model}: ${e.desc}${e.st?" – "+e.st:""}`}
+function kbPartText(pn){if(!pn||!KB)return "";const ko=lang==="ko";const p=partInfo(pn),eos=eoFor(pn);let s="";
+  if(p)s+=`- ${ko?"품번 정보 (BOM)":"Parte (BOM)"}: ${p.pn}${p.dcc&&p.dcc!==p.pn?" / "+p.dcc:""} ${p.name}${p.mat?" · "+p.mat:""}${p.th?" t"+p.th:""}${p.weld?" · "+(ko?"융착 ":"soldadura ")+p.weld:""}${p.chain.length?" · "+(ko?"상위":"padre")+": "+p.chain.join(" > "):""} · ${p.models.join("/")}${p.specs.length?" ("+p.specs.join(", ")+")":""}\n`;
+  if(eos.length)s+=`- ${ko?"관련 4M/EO":"4M/EO relacionados"}: ${eos.slice(0,4).map(eoLine).join(" / ")}\n`;return s}
+/* the reference block every assistant gets in its system prompt */
+function kbContext(){if(!KB||!KB.org||!KB.org.length)return "";const L=["\n\n[팀 참조 자료 – 사례집 v1.8, 이 기기에서만 사용]"];
+  L.push("조직·업무분장 (담당·책임자를 쓸 때는 이 목록의 이름만 쓰고, 맞는 사람이 없으면 [확인 필요]):");
+  KB.org.forEach(o=>L.push(`- ${o.name} | ${o.pos} | ${o.area}${o.shift&&o.shift!=="-"?" "+o.shift:""} | ${o.duty.slice(0,140)}`));
+  if(KB.lines&&KB.lines.length)L.push("라인 배치 (히트맵 공정 → 라인, 순회검사 주간/야간): "+KB.lines.map(l=>`${l.line} ${l.name}(${l.proc}) ${l.t1}/${l.t2}`).join("; "));
+  const op=eoList().filter(eoOpen);if(op.length)L.push(`진행 중 4M/EO ${op.length}건 (상세는 요청 본문에 필요한 것만 첨부됨).`);
+  if(KB.gauges&&KB.gauges.length){const g={};KB.gauges.forEach(x=>{(g[x.eq]=g[x.eq]||[]).push(x.id)});L.push("측정기 (교정 대상): "+Object.entries(g).map(([k,v])=>`${k} ${v.length}대 (${v[0]}${v.length>1?"~"+v[v.length-1].slice(-3):""})`).join(", "))}
+  return L.join("\n")}
+/* document desks: reference tables per task + parts/EOs found in the memo or the files */
+function docExtra(tk,src){let x="";
+  if(tk.id==="4m"&&KB&&KB.m4&&KB.m4.length)x+="\n[HKMC 4M 신고 기준표]\n"+KB.m4.map(m=>`${m.id} ${m.k} ${m.name} – ${m.rule} / 제외: ${m.exc} / ISIR ${m.isir} / 제출서류: ${m.docs}`).join("\n");
+  if(tk.id==="vstd"&&KB&&KB.vp&&KB.vp.length)x+="\n[검사 POINT 표준 문구]\n"+KB.vp.map(v=>`${v.id} ${v.ko} / ${v.es}`).join("\n");
+  if(tk.id==="spc")x+="\n[X-bar 판정 7규칙] 1 한계 밖 / 2 한쪽 7점 연속 / 3 7점 연속 상승·하강 / 4 주기 (육안) / 5 2σ 밖 3점 중 2·7점 중 3·10점 중 4 / 6 1σ 안 90% 이상 / 7 1σ 밖 40% 이상";
+  if(["4m","brief","min","8d","panel","mail"].includes(tk.id)&&eoList().length){const ls=eoList();x+=`\n[4M/EO 현황 (${EOL?"Lista maestra "+new Date(EOL.at).toLocaleDateString():"사례집"})]\n`+(tk.id==="4m"?ls:ls.filter(eoOpen)).map(eoLine).join("\n")}
+  if(["vstd","wi","spc","ppm"].includes(tk.id)&&KB&&KB.gauges&&KB.gauges.length)x+="\n[측정기 목록 – 관리번호 | 장비 | 범위 | 교정 주기]\n"+KB.gauges.map(g=>`${g.id} | ${g.eq} | ${g.rng} | ${g.per}`).join("\n");
+  if(src&&KB&&KB.pn){const seen=new Set(),pt=[];(String(src).match(/[A-Z]{0,3}\d{3,6}[A-Z]?-?[A-Z0-9]{2,6}(?:-[A-Z0-9]{2,4})?/gi)||[]).forEach(m=>{const n=normP(m);if(n.length<8||seen.has(n))return;seen.add(n);const t=kbPartText(m);if(t)pt.push(t.trim())});
+    if(pt.length)x+="\n[자료에 나온 품번 – BOM·4M/EO 대조]\n"+pt.slice(0,6).join("\n")}
+  return x}
+function kbOffline(tk,o,memo,ko){const add=(t,l)=>{if(l.length){o.push("");o.push("■ "+t);l.forEach(z=>o.push("  - "+z))}};
+  if(tk.id==="4m")add(ko?"4M/EO 현황 (진행 중)":"4M/EO en curso",eoList().filter(eoOpen).map(eoLine));
+  if(["vstd","wi","spc"].includes(tk.id)&&KB&&KB.gauges)add(ko?"측정기 후보":"Equipos de medición",KB.gauges.slice(0,40).map(g=>`${g.id} ${g.eq} ${g.rng}`));
+  if(memo){const t=docExtra({id:"-"},memo).split("\n").slice(2);add(ko?"메모의 품번 – BOM·EO":"Partes de la nota",t.filter(Boolean).map(z=>z.replace(/^- /,"")))}}
+/* status of the change-point desk also counts EOs from the library */
+function eoStatus(out,tl){const ls=eoList();if(!ls.length)return;const op=ls.filter(eoOpen),up=ls.map(e=>({e,w:eoImpact(e)})).filter(x=>x.w&&x.w.up);
+  const c=out.chg;if(up.length&&c.lv!=="hi"){c.lv="hi";c.short=tl(`EO 후 불량↑ ${up.length}건 · ${eoV(up[0].e.oem)||eoV(up[0].e.dcc)||""}`,`Defectos↑ tras EO: ${up.length}`)}
+  else if(c.lv==="idle"&&op.length){c.lv="ok";c.short=tl(`4M/EO ${op.length}건 진행 중`,`${op.length} cambios 4M/EO en curso`)}
+  c.long={ko:c.long.ko+` 사례집·Lista maestra의 4M/EO ${ls.length}건 중 진행 중 ${op.length}건, 적용 후 히트맵 불량 증가 ${up.length}건.`,es:c.long.es+` 4M/EO del libro: ${ls.length}, en curso ${op.length}, defectos↑ ${up.length}.`}}
+/* Lista maestra (the team's own 4M/EO/ISIR master list) → EO status on this device */
+async function loadLista(file){const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];const A=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+  const s=v=>v instanceof Date?`${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,"0")}-${String(v.getDate()).padStart(2,"0")}`:String(v==null?"":v).trim();const list=[];
+  A.forEach((r,i)=>{if(i<6)return;const num=r[0];if(!(typeof num==="number"||/^\d+$/.test(s(num))))return;if(!s(r[1])&&!s(r[6])&&!s(r[9]))return;
+    const steps=r.slice(13,21).map(s).filter(Boolean).length;const ap=s(r[23]);
+    list.push({id:"L"+s(num),model:s(r[1]),kind:s(r[8])||"EO",oem:s(r[9]),dcc:s(r[10]),date:s(r[11]),pns:s(r[6])||s(r[4]),name:s(r[3]),desc:s(r[7]),st:(ap||(steps?`Step ${steps}/8`:"Pending"))+(s(r[12])&&s(r[12])!=="TBD"?` · ISIR ${s(r[12])}`:""),sup:s(r[25]),tbc:/TBC/i.test(s(r[24]))?s(r[24]).slice(0,120):""})});
+  if(!list.length)throw new Error("Lista maestra: rows");EOL={list,name:file.name,at:Date.now()};try{localStorage.setItem(EO_KEY,JSON.stringify(EOL))}catch(e){}return list.length}
+/* 4M/EO status section in the change-point desk */
+function eoSection(b,h,ko){const ls=eoList();h(ko?"4M/EO 현황 – 히트맵 영향":"Estado 4M/EO – impacto en el mapa");
+  b.appendChild(el("p","msg",ls.length?(ko?`${EOL?"Lista maestra ("+EOL.name+")":"사례집 4M_EO현황"} ${ls.length}건. 대상 품번과 하위 부품(BOM)의 히트맵 불량을 변경 전 4주 vs 변경 후로 비교합니다.`:`${ls.length} cambios. Se comparan defectos del mapa (parte y subpartes del BOM) antes vs después.`):(ko?"사례집 v1.8을 불러오거나 Lista maestra 엑셀을 불러오면 4M/EO 현황이 여기에 나옵니다.":"Cargue el libro de casos v1.8 o la Lista maestra.")));
+  if(ls.length){const rows=ls.map(e=>({e,w:eoImpact(e)})).sort((a,b)=>(b.w&&b.w.up?1:0)-(a.w&&a.w.up?1:0)||eoTs(b.e.date)-eoTs(a.e.date));
+    b.appendChild(tbl([ko?"변경":"Cambio",ko?"내용":"Contenido",ko?"상태·영향":"Estado"],rows.map(({e,w})=>[
+      `${e.kind} ${[eoV(e.oem),eoV(e.dcc)].filter(Boolean).join(" ")} · ${e.model} · ${eoV(e.date)||"?"}`,(e.desc||"").slice(0,60)+((e.desc||"").length>60?"…":"")+(e.tbc?" ⚑":""),eoCell(e,w,ko)])));
+    const up=rows.filter(x=>x.w&&x.w.up);up.slice(0,3).forEach(({e,w})=>{const d=el("div","icard");d.appendChild(el("b",null,(ko?"변경 후 불량 증가 – ":"Defectos subieron – ")+(eoV(e.oem)||eoV(e.dcc)||e.name)));
+      d.appendChild(el("div","msg",`${e.desc} · ${ko?"주요 불량":"principal"} ${typeName(w.top)} · ${fmt(w.before)} → ${fmt(w.after)}/${ko?"주":"sem"}`));const r=el("div","irow");const bx=el("button",null,t("exp"));bx.type="button";
+      bx.addEventListener("click",()=>openDrawer("exp",{q:`${ko?"EO/4M 적용 후 불량 증가":"Defectos tras EO/4M"} ${eoLine(e)} – ${typeName(w.top)} ${fmt(w.before)} → ${fmt(w.after)}/${ko?"주":"sem"}`,keys:["sens"]}));r.appendChild(bx);d.appendChild(r);b.appendChild(d)})}
+  const f=el("div","frm");const fi=inp("file");fi.accept=".xlsx,.xls";const lb=el("label",null,ko?"Lista maestra 엑셀 불러오기 (첫 시트, 7행부터)":"Cargar Lista maestra (1a hoja, desde fila 7)");lb.appendChild(fi);f.appendChild(lb);
+  const ms=el("div","msg");f.appendChild(ms);fi.addEventListener("change",async()=>{if(!fi.files[0])return;try{const n=await loadLista(fi.files[0]);ms.textContent=(ko?"불러옴: ":"Cargado: ")+n;refreshView();openDrawer("fu")}catch(e){ms.textContent=(ko?"읽기 실패 – ":"Error – ")+e.message}});
+  if(EOL){const bc=el("button",null,ko?"Lista maestra 지우고 사례집 사용":"Usar el libro de casos");bc.type="button";bc.addEventListener("click",()=>{EOL=null;try{localStorage.removeItem(EO_KEY)}catch(e){}refreshView();openDrawer("fu")});f.appendChild(bc)}
+  b.appendChild(f)}
+function lineTag(proc){const l=lineOf(proc);return l?` · ${lang==="ko"?"라인":"Línea"} ${l.line} ${l.t1}${l.t2&&l.t2!=="-"?"/"+l.t2:""}`:""}
+
 function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",sup:"sq",cus:"sq"}[id]||id;S.open=id;const SUB={insp:["insp","iqc"],ana:["ana","rep"],d8:["d8","kb"],sq:["sup","cus"],fu:["chg","eff"]}[id]||[id];const is_=k=>SUB.includes(k);const a=AGI[id],st=ST[id];$("dTitle").textContent=L(a.role);const b=$("dBody");b.textContent="";const p=document.createElement("p");p.textContent=L(st.long);b.appendChild(p);
   const h=s=>{const e=document.createElement("h3");e.textContent=s;b.appendChild(e)};
   if(is_("insp")){h(t("today"));b.appendChild(tbl([t("proc"),t("defect"),t("part"),t("qty")],Z.today.slice(-15).reverse().map(r=>[procName(r.oproc),typeName(r.type),r.part||"-",fmt(r.qty)])));
@@ -1236,7 +1344,7 @@ function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",s
       bx.addEventListener("click",()=>openDrawer("exp",{q:(`${ko?"4M 변경 후 문제":"Problema tras cambio 4M"} [${c.kind}] ${c.part||""} ${c.mach||""}: ${txt(c.desc)} (${ko?"변경일":"fecha"} ${new Date(c.date).toLocaleDateString()}). ${ko?"같은 품번·설비 불량 주평균":"Defectos por semana"} ${fmt(w.before)} → ${fmt(w.after)}`),keys:xFromMach(c.mach)}));row.appendChild(bx);
       if(!tk.demo){const bd=el("button",null,ko?"삭제":"Borrar");bd.type="button";bd.addEventListener("click",()=>{TRK.chg=TRK.chg.filter(x=>x!==c);saveTrk();refreshView();openDrawer("fu")});row.appendChild(bd)}
       d.appendChild(row);b.appendChild(d)});
-    if(!Z.chg.length)b.appendChild(el("p","msg",t("none")));exportBtn()}
+    if(!Z.chg.length)b.appendChild(el("p","msg",t("none")));eoSection(b,h,ko);exportBtn()}
   if(is_("eff")){const tk=trk();pre=pre||{};
     h(ko?"대책 등록":"Registrar contramedida");const f=el("div","frm");
     const iD=field(f,ko?"시행일":"Fecha de implementación",inp("date",today()));
