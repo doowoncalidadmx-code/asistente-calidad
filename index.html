@@ -32,6 +32,7 @@ canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rend
 .bub.mid{border-color:var(--mid);box-shadow:0 0 8px rgba(255,176,32,.4)}.bub.mid::after{border-color:var(--mid)}
 .bub.idle{color:#8C9AB8;border-color:#2A3E6A;box-shadow:none}.bub.idle::after{border-color:#2A3E6A}
 .tag{position:absolute;transform:translate(-50%,0);font-size:clamp(8px,1.05vw,11px);color:#A5F3FC;background:rgba(5,8,15,.85);border:1px solid rgba(34,211,238,.35);border-radius:3px;padding:1px 5px;white-space:nowrap;pointer-events:none}
+.outbox{margin-top:14px}.ohead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ohead h2{font-size:16px;margin:0;color:#E6F1FF;letter-spacing:.2px}.osel{margin-left:auto;max-width:150px}.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:8px}.ocard{background:linear-gradient(180deg,#0F1A30,#0B1324);border:1px solid var(--line);border-left:3px solid var(--ac);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}.otop b{font-size:13.5px;line-height:1.35}.otag{display:inline-block;font-size:11px;color:var(--ac);border:1px solid var(--ac);border-radius:10px;padding:0 7px;margin-right:6px;vertical-align:1px}.ocard ul{margin:0;padding-left:17px;font-size:12.5px;line-height:1.5;color:#B8C6E0}.ocard .irow{margin-top:auto}
 .roster{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
 .card{display:flex;gap:10px;align-items:flex-start;text-align:left;background:linear-gradient(180deg,#0F1A30,#0B1324);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:64px}
 .card:hover{border-color:var(--brand);box-shadow:0 0 12px rgba(34,211,238,.3)}
@@ -123,6 +124,7 @@ details{margin-top:14px}summary{cursor:pointer;font-weight:700;min-height:32px}
   </div>
   <div class="stage" id="stage"><canvas id="cv" width="640" height="392" aria-label="품질팀 사무실"></canvas></div>
   <div class="meta"><span id="upd"></span><span id="hint"></span></div>
+  <section class="outbox" id="outbox"></section>
   <div class="roster" id="roster"></div>
 </main>
 <aside class="drawer" id="drawer" aria-hidden="true">
@@ -1307,6 +1309,132 @@ function eoSection(b,h,ko){const ls=eoList();h(ko?"4M/EO 현황 – 히트맵 �
   b.appendChild(f)}
 function lineTag(proc){const l=lineOf(proc);return l?` · ${lang==="ko"?"라인":"Línea"} ${l.line} ${l.t1}${l.t2&&l.t2!=="-"?"/"+l.t2:""}`:""}
 
+/* ==== out ==== */
+/* ---------- v2.2: every assistant hands in a finished result (no button needed) ----------
+   Built from the heatmap data + the case library on this device each time the data refreshes.
+   With a Claude API key each result can be rewritten as a polished report ("AI로 다듬기"). */
+const OUT_KEY="equipo-out";let OUTH={};try{OUTH=JSON.parse(localStorage.getItem(OUT_KEY)||"{}")||{}}catch(e){OUTH={}}
+const K=(ko,es)=>lang==="ko"?ko:es;
+const dKey=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const shiftOf=ts=>{const h=new Date(ts).getHours();return h>=7&&h<19?"T1":"T2"};
+const pct=(a,b)=>b?Math.round(a/b*100)+"%":"-";
+const mdT=(head,rows)=>["| "+head.join(" | ")+" |","|"+head.map(()=>"---").join("|")+"|"].concat(rows.map(r=>"| "+r.map(c=>String(c==null?"":c).replace(/\|/g,"/")).join(" | ")+" |")).join("\n");
+const sumQ=rs=>rs.reduce((s,r)=>s+r.qty,0);
+function groupQ(rs,f){const g={};rs.forEach(r=>{const k=f(r)||"-";g[k]=(g[k]||0)+r.qty});return Object.entries(g).sort((a,b)=>b[1]-a[1])}
+
+/* the data breakdown a quality engineer would do by hand before writing an 8D */
+function issueBreak(is){const D=864e5,now=Date.now();const all=S.recs.filter(r=>r.type===is.type&&(!is.part||r.part===is.part));
+  const rs=all.filter(r=>r.ts>=now-28*D),w1=all.filter(r=>r.ts>=now-7*D),tot=sumQ(w1);
+  const days=[...Array(7)].map((_,i)=>{const t0=dayStart(now)-(6-i)*D;const q=sumQ(w1.filter(r=>r.ts>=t0&&r.ts<t0+D));return [new Date(t0).toLocaleDateString(lang==="ko"?"ko-KR":"es-MX",{month:"numeric",day:"numeric",weekday:"short"}),q]});
+  const sh=groupQ(w1,r=>shiftOf(r.ts)),by=groupQ(w1,r=>r.by&&r.by!=="demo"?r.by:""),mc=groupQ(rs,r=>r.omach||r.mach),det=groupQ(w1,r=>procName(r.proc));
+  const flags=[];const top=(g)=>g[0]?g[0][1]/Math.max(1,sumQ(w1)):0;
+  if(tot>=5){const dmax=days.slice().sort((a,b)=>b[1]-a[1]);if(dmax[0][1]+(dmax[1]?dmax[1][1]:0)>=tot*0.7)flags.push(K(`특정 일자 집중 (${dmax[0][0]}${dmax[1]&&dmax[1][1]?", "+dmax[1][0]:""}) → 그날 로트·셋업·작업자·설비 정지 이력 확인`,`Concentrado en ${dmax[0][0]} → revisar lote, ajuste, operador y paros de ese día`));
+    const allSh=new Set(S.recs.filter(r=>r.ts>=now-7*D).map(r=>shiftOf(r.ts)));if(allSh.size>1&&sh.length&&top(sh)>=0.8)flags.push(K(`${sh[0][0]==="T1"?"주간":"야간"} ${pct(sh[0][1],tot)} 편중 → 교대별 조건·작업자·설비 워밍업 차이`,`${pct(sh[0][1],tot)} en ${sh[0][0]} → diferencias por turno`));
+    if(by.length>1&&top(by)>=0.7)flags.push(K(`기록자 ${by[0][0]} ${pct(by[0][1],tot)} → 실제 증가인지 판정 기준 차이인지 확인`,`${pct(by[0][1],tot)} registrado por ${by[0][0]} → ¿aumento real o criterio distinto?`));}
+  const wk=w1.length?groupQ(w1,r=>r.omach||r.mach):[];if(wk.length===1&&mc.length>1)flags.push(K(`이번 주는 ${wk[0][0]}에서만 발생 (같은 품번 다른 설비는 정상) → 설비 국한`,`Solo en ${wk[0][0]} esta semana → causa de máquina`));
+  return {tot,days,sh,by,mc,det,flags}}
+function breakMd(b){const L=[];L.push(mdT([K("일자","Día"),K("개","pzs")],b.days));
+  L.push("");L.push(K("교대(7~19시 = 주간, 추정): ","Turno (7–19 h = T1, estimado): ")+(b.sh.map(([k,v])=>`${k} ${v}`).join(" / ")||"-"));
+  if(b.by.length)L.push(K("기록자: ","Registró: ")+b.by.map(([k,v])=>`${k} ${v}`).join(" / "));
+  L.push(K("설비별 (4주): ","Por máquina (4 sem): ")+b.mc.map(([k,v])=>`${k} ${v}`).join(" / "));
+  if(b.det.length)L.push(K("발견 공정: ","Detectado en: ")+b.det.map(([k,v])=>`${k} ${v}`).join(" / "));
+  if(b.flags.length){L.push("");L.push(K("■ 데이터가 말하는 것","■ Lo que dicen los datos"));b.flags.forEach(f=>L.push("- "+f))}return L.join("\n")}
+function issueTitle(is){return `${typeName(is.type)}${is.part?" / "+is.part:""} (${is.mach||procName(is.oproc)})`}
+function expRequest(is,b){const tn=typeName(is.type);const L=[];
+  L.push(K("doowon-expert-panel 스킬로 자문해줘. 외부 자료를 검색해서 출처를 달고, 확인된 사실과 추정을 구분해줘.","Asesoría del panel de expertos: buscar fuentes externas, citar y separar hechos de supuestos."));
+  L.push(`- ${K("문제","Problema")}: ${tn} / ${is.part||"-"} / ${procName(is.oproc)} ${is.mach||""}`);
+  L.push(`- ${K("주간 추이(개)","Tendencia semanal")}: ${is.W4.map((w,i)=>"W"+w.slice(-2)+" "+is.ser[i]).join(", ")}`);
+  L.push(breakMd(b).split("\n").filter(l=>!/^\|/.test(l)).map(l=>l&&!/^■/.test(l)&&!/^- /.test(l)?"- "+l:l).join("\n"));
+  const pi=kbPartText(is.part);if(pi)L.push(pi.trim());const ln=lineOf(is.oproc);if(ln)L.push(`- ${K("라인","Línea")} ${ln.line} ${ln.name}: ${ln.det} – ${K("순회검사","inspección")} ${ln.t1}/${ln.t2}`);
+  if(is.m&&is.m.pats.length)L.push(`- ${K("사례집 패턴","Patrones")}: ${is.m.pats.map(p=>p.id+" "+p.name).join(" / ")}`);
+  L.push(`- ${K("공장 조건","Condiciones")}: ${K("사출 커버·바디 PP-TD40, 융착품 PP-TD30, 알루미늄 배관 Al3003 / 냉각탑 공급수 20℃대 고정, 금형반 없음, 흡기 커버·바디 외관품, 멕시코 경수","PP-TD40 inyección, PP-TD30 soldadura, Al3003 tubo / agua de torre ~20 ℃ fija, sin taller de moldes, piezas de apariencia, agua dura")}`);
+  L.push(K("원하는 것: ① 가능한 메커니즘(확인/추정 구분) ② 현장에서 바로 할 확인·측정 ③ 기준값(출처 포함) ④ 대책 우선순위 ⑤ 현장 공유용 스페인어 요약","Quiero: ① mecanismos ② verificaciones en piso ③ valores de referencia con fuente ④ prioridades ⑤ resumen en español"));
+  return L.join("\n")}
+
+function buildOutputs(){if(!Z||!S.recs)return [];const now=Date.now(),D=864e5,t0=dayStart(now),ko=lang==="ko";const out=[];const stamp=new Date(now).toLocaleString();
+  const recs=S.recs.filter(r=>clsOf(r.type)!=="S");
+  /* 1. inspection: daily patrol coverage by line and inspector */
+  {const y0=t0-D;const today=recs.filter(r=>r.ts>=t0),yest=recs.filter(r=>r.ts>=y0&&r.ts<t0);const lines=(KB&&KB.lines&&KB.lines.length)?KB.lines:(CAT.procs||[]).map(p=>({line:"",proc:p.id,name:L(p),t1:"",t2:""}));
+    const rows=lines.map(l=>{const a=today.filter(r=>(r.proc===l.proc)),b=yest.filter(r=>r.proc===l.proc);const tp=groupQ(a.length?a:b,r=>typeName(r.type))[0];
+      return [`${l.line?l.line+" ":""}${l.name}`,[l.t1,l.t2].filter(x=>x&&x!=="-").join(" / ")||"-",a.length?`${a.length}${K("건","")} · ${sumQ(a)}${K("개"," pzs")}`:K("기록 없음","sin registro"),b.length?`${b.length} · ${sumQ(b)}`:"0",tp?tp[0]:"-"]});
+    const none=rows.filter(r=>/기록 없음|sin registro/.test(r[2])).map(r=>r[0]);const byP=groupQ(today,r=>r.by&&r.by!=="demo"?r.by:"");
+    const md=[`## ${K("순회검사 일일 현황","Patrulla del día")} – ${new Date(now).toLocaleDateString()}`,mdT([K("라인","Línea"),K("담당 (주/야)","Inspector T1/T2"),K("오늘","Hoy"),K("어제 (건·개)","Ayer"),K("주요 불량","Defecto principal")],rows),"",
+      `■ ${K("기록 품질","Calidad del registro")}`,`- ${K("배관 위치 누락","Tubo sin ubicación")}: ${Z.noLoc.length} / ${K("기능 불량 사진 누락","Funcional sin foto")}: ${Z.noPhotoF.length} / ${K("다른 공정 원인으로 이동","Movidos a otro proceso")}: ${Z.moved.length}`,
+      byP.length?`- ${K("오늘 기록자","Registraron hoy")}: ${byP.map(([k,v])=>`${k} ${v}`).join(", ")}`:"",none.length?`- ${K("오늘 기록이 없는 라인","Líneas sin registro hoy")}: ${none.join(", ")} → ${K("순회 누락인지 불량 0인지 확인","¿no se patrulló o cero defectos?")}`:""].filter(Boolean).join("\n");
+    out.push({id:"insp",ag:"insp",title:K("순회검사 일일 현황","Patrulla del día"),sum:[`${K("오늘","Hoy")} ${today.length}${K("건","")} · ${sumQ(today)}${K("개"," pzs")}`,none.length?`${K("기록 없는 라인","Sin registro")}: ${none.slice(0,3).join(", ")}`:K("모든 라인 기록 있음","Todas las líneas con registro"),`${K("누락","Faltantes")}: ${K("위치","ubic.")} ${Z.noLoc.length} · ${K("사진","foto")} ${Z.noPhotoF.length}`],text:md})}
+  /* 2. analysis: weekly process analysis */
+  {const sg=trendSignals();const a0=Z.alerts[0];const md=[`## ${K("주간 공정 분석","Análisis semanal de proceso")} – ${Z.wk}`,anaOffline().split("\n").slice(2).join("\n")].join("\n");
+    out.push({id:"ana",ag:"ana",title:K("주간 공정 분석 보고서","Reporte semanal de proceso")+" "+Z.wk,sum:[a0?`${a0.key}: ${typeName(a0.topType)} ${a0.ratio===Infinity?K("신규","nuevo"):"×"+a0.ratio.toFixed(1)}`:K("이상 설비 없음","Sin alertas"),`${K("이상 추세","Tendencias")} ${sg.length}${K("건","")}${sg[0]?" · "+sg[0].key:""}`,Z.top3[0]?`Top1 ${typeName(Z.top3[0].type)} ${Z.top3[0].part||""} ${fmt(Z.top3[0].q)}${K("개"," pzs")}`:""].filter(Boolean),text:md,ai:"report"})}
+  /* 3. 8D: a full draft per issue, with the data breakdown and the expert request already attached */
+  Z.issues.slice(0,3).forEach((is,i)=>{const b=issueBreak(is);const tl=issueTitle(is);
+    const md=[draft8D(is),"",`■ ${K("데이터 분해 (최근 7일)","Desglose de datos (7 días)")}`,breakMd(b)].join("\n");
+    out.push({id:"d8_"+i,ag:"d8",title:K("8D 초안 – ","Borrador 8D – ")+tl,sum:[`${is.W4.map((w,j)=>"W"+w.slice(-2)+" "+is.ser[j]).join(" → ")}`,b.flags[0]||(is.m&&is.m.pats[0]?`${K("후보","Candidata")} ${is.m.pats[0].id} ${is.m.pats[0].name}`:K("원인 후보: 현장 확인","Causa: verificar en piso")),is.why==="8D"?K("2주 연속 Top3 → 8D 대상","2 semanas en Top 3 → 8D"):is.why==="alert"?K("설비 경보에서 올라옴","De alerta de máquina"):K("이번 주 Top3","Top 3 de la semana")],text:md,exp:expRequest(is,b),ai:"8d"})});
+  /* 4. supplier & customer */
+  {const sup=groupQ(Z.sup,r=>r.part);const strong=Z.iqc.filter(o=>o.strong);const vz=vzRows().filter(r=>r.ts&&r.ts>=now-30*D).sort((a,b)=>b.ts-a.ts);
+    const md=[`## ${K("협력사·고객 현황","Proveedores y cliente")} – ${Z.wk}`,`■ ${K("이번 주 협력사 원인 불량","Defectos de proveedor esta semana")}`,sup.length?mdT([K("품번","Parte"),K("개","pzs"),K("SCAR 필요","SCAR")],sup.slice(0,10).map(([p,q])=>[p,q,q>=10||strong.some(o=>o.part===p)?K("발행 권장","Emitir"):K("관찰","Observar")])):"- "+K("없음","Ninguno"),
+      "",`■ ${K("수입검사 강화 대상 (4주 반복)","Inspección reforzada (4 sem)")}`,strong.length?strong.map(o=>`- ${o.part}: ${o.q}${K("개"," pzs")} / ${o.wk.size}${K("주","sem")}`).join("\n"):"- "+K("없음","Ninguno"),
+      "",`■ ${K("최근 30일 고객 불량 (VAATZ)","Reclamos 30 días (VAATZ)")}`,vz.length?mdT([K("일자","Fecha"),K("관리번호","Folio"),K("품번","Parte"),K("내용","Defecto"),K("수량","Cant."),K("관련 4M/EO","4M/EO")],vz.slice(0,15).map(r=>[new Date(r.ts).toLocaleDateString(),r.no||"",r.part,r.defect.slice(0,40),r.qty,eoFor(r.part).slice(0,2).map(e=>eoV(e.oem)||eoV(e.dcc)||e.kind).join(", ")||"-"])):"- "+K("VAATZ 파일을 넣으면 여기서 고객 불량별 8D 초안이 바로 나옵니다.","Cargue VAATZ para ver aquí los reclamos.")].join("\n");
+    out.push({id:"sq",ag:"sq",title:K("협력사·고객 현황","Proveedores y cliente"),sum:[`${K("협력사 불량","Proveedor")} ${sumQ(Z.sup)}${K("개"," pzs")} · ${sup.length}${K("품번"," partes")}`,`${K("수입 강화","Reforzada")} ${strong.length}`,`VAATZ 30${K("일","d")}: ${vz.length}${K("건","")}`],text:md})}
+  /* 5. change points & effectiveness */
+  {const ls=eoList();const op=ls.filter(eoOpen);const imp=ls.map(e=>({e,w:eoImpact(e)}));const up=imp.filter(x=>x.w&&x.w.up);
+    const effRows=Z.eff.map(({a,e})=>[new Date(a.date).toLocaleDateString(),typeName(a.type),a.part||"-",txt(a.desc),`${fmt(e.before)} → ${fmt(e.after)}`,{ok:K("유효","Efectiva"),weak:K("미흡","Débil"),bad:K("무효·악화","Sin efecto"),wait:K("판정 대기","En espera")}[e.st]||e.st]);
+    const md=[`## ${K("4M/EO·대책 효과 현황","Cambios 4M/EO y efectividad")} – ${Z.wk}`,`■ ${K("진행 중 4M/EO","4M/EO en curso")} (${op.length}/${ls.length})`,op.length?mdT([K("변경","Cambio"),K("일자","Fecha"),K("내용","Contenido"),K("상태","Estado"),K("확인 필요","Por confirmar")],op.map(e=>[`${e.kind} ${[eoV(e.oem),eoV(e.dcc)].filter(Boolean).join(" ")} ${e.model}`,eoV(e.date)||"?",e.desc.slice(0,60),e.st,e.tbc||""])):"- "+K("사례집 v1.8 또는 Lista maestra를 불러오면 나옵니다.","Cargue el libro v1.8 o la Lista maestra."),
+      up.length?"\n■ "+K("적용 후 불량 증가","Defectos subieron tras el cambio")+"\n"+up.map(({e,w})=>`- ${eoLine(e)} → ${typeName(w.top)} ${fmt(w.before)} → ${fmt(w.after)}/${K("주","sem")}`).join("\n"):"",
+      "",`■ ${K("대책 효과 판정","Efectividad de contramedidas")}`,effRows.length?mdT([K("시행일","Fecha"),K("불량","Defecto"),K("품번","Parte"),K("대책","Acción"),K("주평균 전→후","Antes→después/sem"),K("판정","Resultado")],effRows):"- "+K("등록된 대책 없음","Sin contramedidas")].filter(x=>x!=="").join("\n");
+    out.push({id:"fu",ag:"fu",title:K("4M/EO·대책 효과 현황","4M/EO y efectividad"),sum:[`4M/EO ${K("진행","en curso")} ${op.length}${K("건","")}${up.length?" · "+K("불량↑ ","defectos↑ ")+up.length:""}`,`${K("대책 판정","Contramedidas")}: ${Z.eff.filter(x=>x.e.st==="ok").length} ${K("유효","ok")} / ${Z.eff.filter(x=>x.e.st==="bad"||x.e.st==="weak").length} ${K("미흡","débil")}`,op.filter(e=>e.tbc).length?`⚑ ${K("확인 필요","Por confirmar")} ${op.filter(e=>e.tbc).length}${K("건","")}`:""].filter(Boolean),text:md})}
+  /* 6. QA: one-page weekly brief for the boss */
+  {const qW=sumQ(Z.thisW.filter(r=>clsOf(r.type)!=="S")),qL=sumQ(S.recs.filter(r=>isoWeek(r.ts)===isoWeek(now-7*D)&&clsOf(r.type)!=="S"));const vz=vzRows().filter(r=>r.ts&&r.ts>=now-7*D);
+    const md=[`## ${K("주간 품질 요약 (상부 보고)","Resumen semanal de calidad")} – ${Z.wk}`,`■ ${K("한 줄 결론","Conclusión")}`,`- ${K("공정 불량","Defectos de proceso")} ${fmt(qW)}${K("개"," pzs")} (${K("지난주","sem. pasada")} ${fmt(qL)}, ${qL?(qW>=qL?"+":"")+Math.round((qW-qL)/qL*100)+"%":"-"})${Z.issues[0]?K(" · 최우선 이슈: "," · Prioridad: ")+issueTitle(Z.issues[0]):""}`,
+      "",`■ Top 3`,mdT(["#",K("불량","Defecto"),K("품번","Parte"),K("공정","Proceso"),K("개","pzs")],Z.top3.map((x,i)=>[i+1,typeName(x.type),x.part||"-",procName(x.proc),fmt(x.q)])),
+      "",`■ ${K("진행 이슈","Temas abiertos")}`,`- ${K("8D 대상","8D")}: ${Z.issues.filter(i=>i.why==="8D").length} / ${K("설비 경보","Alertas")}: ${Z.alerts.filter(a=>a.st==="hi").length} / ${K("고객 불량(7일)","Reclamos (7d)")}: ${vz.length} / 4M·EO ${K("진행","en curso")}: ${eoList().filter(eoOpen).length}`,
+      "",`■ ${K("다음 주 계획","Plan próxima semana")}`,...Z.issues.slice(0,3).map(is=>`- ${issueTitle(is)}: ${is.m&&is.m.pats[0]?is.m.pats[0].check:K("현장 확인","verificar en piso")}`),
+      "",`■ ${K("지원 요청","Apoyo requerido")}`,"- "+K("[확인 필요]","[por confirmar]")].join("\n");
+    out.push({id:"qa",ag:"qa",title:K("주간 품질 요약 (상부 보고)","Resumen semanal de calidad"),sum:[`${fmt(qW)}${K("개"," pzs")} (${K("지난주","ant.")} ${fmt(qL)})`,Z.issues[0]?K("최우선: ","Prioridad: ")+issueTitle(Z.issues[0]):"",`${K("고객 불량 7일","Reclamos 7d")} ${vz.length}`].filter(Boolean),text:md,ai:"brief"})}
+  /* 7. QC: daily QRQC sheet for the morning meeting (Spanish headers so it can go to the floor) */
+  {const y0=t0-D;const rs=recs.filter(r=>r.ts>=y0);const g={};rs.forEach(r=>{const k=r.type+"|"+r.part+"|"+(r.omach||r.mach);const o=g[k]=g[k]||{type:r.type,part:r.part,mach:r.omach||r.mach,proc:r.oproc,q:0,score:0};o.q+=r.qty;o.score+=r.qty*WGT[clsOf(r.type)]});
+    const top=Object.values(g).sort((a,b)=>b.score-a.score).slice(0,8);
+    const md=[`## Daily QRQC – ${new Date(now).toLocaleDateString()}`,K("어제~오늘 불량 상위 (가중 점수 순). 담당은 라인 배치에서 자동, 조치·기한은 회의에서 채움.","Top de ayer y hoy (por criticidad). Responsable según la línea; acción y fecha en la junta."),
+      mdT(["#","Defecto / 불량","Parte","Máquina","Pzs","Línea · Inspector","Acción inmediata","Responsable","Fecha"],top.map((x,i)=>{const l=lineOf(x.proc);return [i+1,`${CAT.defs[x.type]?CAT.defs[x.type].es:x.type} / ${CAT.defs[x.type]?CAT.defs[x.type].ko:""}`,x.part||"-",x.mach||"-",x.q,l?`${l.line} ${l.t1}/${l.t2}`:"-","","",""]}))].join("\n");
+    out.push({id:"qc",ag:"qc",title:"Daily QRQC",sum:[`${K("상위","Top")} ${top.length}${K("건","")}`,top[0]?`1) ${typeName(top[0].type)} ${top[0].part||""} ${top[0].q}${K("개"," pzs")}`:"",K("스페인어 표 – 아침 회의용","Tabla en español para la junta")].filter(Boolean),text:md})}
+  /* 8. expert room: the request for the top issue, already composed with all the context */
+  if(Z.issues[0]){const is=Z.issues[0];const b=issueBreak(is);
+    out.push({id:"exp",ag:"exp",title:K("자문 요청서 – ","Solicitud de asesoría – ")+issueTitle(is),sum:[K("히트맵 분해·BOM·EO·라인·사례집 패턴 포함","Incluye desglose, BOM, EO, línea y patrones"),b.flags[0]||K("데이터 편중 없음","Sin concentración en los datos")],text:expRequest(is,b),copyOnly:true,ai:"exp",is})}
+  return out}
+
+function saveOut(list){try{const k=dKey(Date.now());OUTH[k]=list.map(o=>({id:o.id,ag:o.ag,title:o.title,sum:o.sum,text:o.text,at:Date.now()}));const ks=Object.keys(OUTH).sort();while(ks.length>7)delete OUTH[ks.shift()];localStorage.setItem(OUT_KEY,JSON.stringify(OUTH))}catch(e){}}
+let OUTL=[];
+function renderOut(){const box=$("outbox");if(!box)return;const ko=lang==="ko";OUTL=buildOutputs();if(!S.demo)saveOut(OUTL);box.textContent="";
+  const hd=el("div","ohead");hd.appendChild(el("h2",null,K("오늘의 결과물","Resultados de hoy")));hd.appendChild(el("span","msg",`${OUTL.length}${K("건 · 데이터 갱신 때마다 다시 작성"," · se rehacen con cada actualización")}`));
+  const past=Object.keys(OUTH).sort().reverse().filter(k=>k!==dKey(Date.now()));if(past.length){const s=sel([["",K("지난 결과물","Anteriores")]].concat(past.map(k=>[k,k])),"");s.className="osel";s.addEventListener("change",()=>{if(s.value)openPast(s.value);s.value=""});hd.appendChild(s)}
+  box.appendChild(hd);const grid=el("div","ogrid");
+  OUTL.forEach(o=>{const a=AGI[o.ag];const c=el("div","ocard");c.style.setProperty("--ac",(alienLook&&alienLook(o.ag))||"#22D3EE");
+    const top=el("div","otop");top.appendChild(el("span","otag",a?L(a.tagL||a.role):""));top.appendChild(el("b",null,o.title));c.appendChild(top);
+    const ul=el("ul");o.sum.forEach(s=>ul.appendChild(el("li",null,s)));c.appendChild(ul);
+    const r=el("div","irow");const b1=el("button","pri",K("열기","Abrir"));b1.type="button";b1.addEventListener("click",()=>openOut(o));r.appendChild(b1);
+    if(!o.copyOnly){const b2=el("button",null,K("엑셀","Excel"));b2.type="button";b2.addEventListener("click",()=>docXlsx(o.title,o.text));r.appendChild(b2);const b3=el("button",null,K("워드","Word"));b3.type="button";b3.addEventListener("click",()=>docWord(o.title,o.text));r.appendChild(b3)}
+    const b4=el("button",null,K("복사","Copiar"));b4.type="button";b4.addEventListener("click",()=>copyTxt(o.text,b4));r.appendChild(b4);c.appendChild(r);grid.appendChild(c)});
+  box.appendChild(grid);if(S.demo)box.appendChild(el("p","msg",K("데모 데이터로 만든 결과물입니다. 히트맵을 연결하면 실제 데이터로 매일 다시 작성됩니다.","Resultados con datos demo. Conecte el mapa para datos reales.")))}
+function alienLook(id){return {insp:"#2DD4BF",ana:"#A78BFA",d8:"#84CC16",sq:"#FB7185",fu:"#60A5FA",qa:"#F59E0B",qc:"#34D399",exp:"#38BDF8"}[id]}
+const SYSOUT={report:()=>SYSANA,"8d":()=>SYS8D.ko,brief:()=>`너는 두원냉기 멕시코 품질팀 품질보증 담당이다. 앱이 계산한 주간 요약으로 상부 보고 한 장을 쓴다. 숫자는 받은 것만 쓰고, 없는 것은 [확인 필요]. 구성: 한 줄 결론 / 주요 수치 표 / 이슈별 현황·다음 조치 / 지원 요청. 개조식, 마크다운 표.`,
+  exp:()=>`너는 두원냉기 멕시코의 박사급 전문가 자문단(해당 분야 2~3명)이다. 웹 검색으로 제조사 기술문서·논문을 확인하고 숫자마다 출처를 단다. 확인된 사실과 추정을 구분한다. 재질: 사출 PP-TD40, 융착 PP-TD30, 배관 Al3003. 답변: ① 메커니즘(확인/추정) ② 현장 확인·측정 ③ 기준값(출처) ④ 대책 우선순위(임시→영구) ⑤ 스페인어 현장 요약. 마크다운 표 사용.`};
+function openOut(o){const ko=lang==="ko";S.open="out";$("dTitle").textContent=o.title;const b=$("dBody");b.textContent="";
+  b.appendChild(el("p","msg",(AGI[o.ag]?L(AGI[o.ag].role)+" · ":"")+new Date(o.at||Date.now()).toLocaleString()));
+  const tx=el("div","atext doc");tx.innerHTML=mdToHtml(o.text);b.appendChild(tx);
+  const r=el("div","irow");const add=(lab,fn,cls)=>{const x=el("button",cls||null,lab);x.type="button";x.addEventListener("click",()=>fn(x));r.appendChild(x);return x};
+  add(t("copy"),x=>copyTxt(o.text,x));add(K("엑셀로 저장","Guardar Excel"),()=>docXlsx(o.title,o.text));add(K("워드로 저장","Guardar Word"),()=>docWord(o.title,o.text));b.appendChild(r);
+  if(o.ai){const box=el("div");const lab=o.ai==="exp"?K("전문가에게 묻기 (웹 검색)","Preguntar a expertos"):K("AI로 다듬기 (Claude)","Mejorar con IA");
+    const bt=el("button","hbtn2",lab);bt.type="button";b.appendChild(bt);b.appendChild(box);
+    if(!aiCfg().key)b.appendChild(el("p","msg",K("⚙ 설정에 Claude API 키를 넣으면 이 결과물을 보고서 문장으로 다듬거나 전문가 답변을 받습니다. 키가 없으면 위 '복사'로 Claude 대화에 붙여넣으세요.","Con clave API en ⚙ se mejora el texto o se consulta a expertos. Sin clave, copie y pegue en Claude.")));
+    bt.addEventListener("click",async()=>{if(!aiCfg().key){box.textContent=K("API 키가 없습니다.","Sin clave API.");return}box.textContent="";box.appendChild(el("p","msg",K("작성 중… (30초~1분)","Redactando…")));
+      try{const q=o.ai==="exp"?o.text:`[앱이 만든 결과물 – 숫자는 이것만 사용]\n${o.text}\n\n${heatSummary()}\n\n위 자료로 완성된 문서를 써줘.`;const res=await askAI(q,[],{sys:SYSOUT[o.ai]()+"\n출력 언어: "+(ko?"한국어":"español"),search:o.ai==="exp"?5:1});
+        const item={dept:o.ag,task:o.id,title:o.title+(o.ai==="exp"?K(" – 자문 답변"," – respuesta"):" (AI)"),text:res.text,src:res.src,at:res.at,model:res.model};DOCH.unshift(item);saveDocs();docResult(o.ag,item,box)}
+      catch(e){box.textContent="";box.appendChild(el("p","msg",K("오류: ","Error: ")+e.message+aiErrHint(e.message)))}})}
+  if(o.exp){const h4=el("h3",null,K("전문가 자문 요청문 (이 이슈)","Solicitud a expertos (este tema)"));b.appendChild(h4);const pre=el("div","atext");pre.textContent=o.exp;b.appendChild(pre);const r2=el("div","irow");const bc=el("button",null,t("copy"));bc.type="button";bc.addEventListener("click",()=>copyTxt(o.exp,bc));r2.appendChild(bc);b.appendChild(r2)}
+  $("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false")}
+function openPast(k){const L0=OUTH[k]||[];S.open="out";$("dTitle").textContent=K("지난 결과물 ","Resultados del ")+k;const b=$("dBody");b.textContent="";
+  L0.forEach(o=>{const c=el("div","icard");c.appendChild(el("b",null,o.title));c.appendChild(el("div","msg",(o.sum||[]).join(" · ")));const r=el("div","irow");const bo=el("button",null,K("열기","Abrir"));bo.type="button";bo.addEventListener("click",()=>openOut(o));r.appendChild(bo);c.appendChild(r);b.appendChild(c)});
+  $("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false")}
+
 function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",sup:"sq",cus:"sq"}[id]||id;S.open=id;const SUB={insp:["insp","iqc"],ana:["ana","rep"],d8:["d8","kb"],sq:["sup","cus"],fu:["chg","eff"]}[id]||[id];const is_=k=>SUB.includes(k);const a=AGI[id],st=ST[id];$("dTitle").textContent=L(a.role);const b=$("dBody");b.textContent="";const p=document.createElement("p");p.textContent=L(st.long);b.appendChild(p);
   const h=s=>{const e=document.createElement("h3");e.textContent=s;b.appendChild(e)};
   if(is_("insp")){h(t("today"));b.appendChild(tbl([t("proc"),t("defect"),t("part"),t("qty")],Z.today.slice(-15).reverse().map(r=>[procName(r.oproc),typeName(r.type),r.part||"-",fmt(r.qty)])));
@@ -1394,7 +1522,7 @@ cv.addEventListener("click",e=>{const r=cv.getBoundingClientRect();const x=(e.cl
 
 /* ---------- ui ---------- */
 function ui(){document.documentElement.lang=lang;$("tTitle").textContent=t("title");document.title=t("title");$("bLang").textContent=t("lang");$("tSetInfo").textContent=t("setInfo");$("tUrl").textContent=t("url");$("tKey").textContent=t("key");$("bSave").textContent=t("save");$("bDemo").textContent=t("demoBtn");$("tKb").textContent=t("kbLoad");$("kbMsg").textContent=(KB?t("kbOk").replace("{c}",KB.cases.length).replace("{p}",KB.pats.length)+(KB.weld&&KB.weld.notes.length?(lang==="ko"?" · 용접노트 ":" · notas ")+KB.weld.notes.length:"")+" · "+KB.name:t("kbNone"))+" — "+t("kbHint");$("hint").textContent=t("hint");
-  const sc=$("src");sc.textContent=S.demo?t("demo"):t("live");sc.className="src "+(S.demo?"demo":"live");$("upd").textContent=S.lastOk?t("upd")+": "+new Date(S.lastOk).toLocaleTimeString():"";if(ST)roster();const ae=document.activeElement;const busyForm=ae&&$("drawer").contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName);if($("drawer").classList.contains("open")&&S.open&&!busyForm&&!["exp","qa","qc"].includes(S.open))openDrawer(S.open);const ko=lang==="ko";$("tAiKey").textContent=ko?"Claude API 키 (전문가 자문실용 · 이 기기에만 저장)":"Clave API de Claude (sala de expertos · solo en este equipo)";$("tAiModel").textContent=ko?"모델":"Modelo";$("bInst").textContent=ko?"앱 설치":"Instalar";$("tInst").textContent=ko?"앱으로 설치: 안드로이드 크롬은 위의 '앱 설치' 버튼(또는 메뉴 → 홈 화면에 추가), 아이폰 사파리는 공유 → 홈 화면에 추가.":"Instalar como app: en Android (Chrome) use el botón 'Instalar' o menú → Agregar a pantalla de inicio; en iPhone (Safari) Compartir → Agregar a inicio.";
+  const sc=$("src");sc.textContent=S.demo?t("demo"):t("live");sc.className="src "+(S.demo?"demo":"live");$("upd").textContent=S.lastOk?t("upd")+": "+new Date(S.lastOk).toLocaleTimeString():"";if(ST){roster();renderOut()}const ae=document.activeElement;const busyForm=ae&&$("drawer").contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName);if($("drawer").classList.contains("open")&&S.open&&!busyForm&&!["exp","qa","qc","out"].includes(S.open))openDrawer(S.open);const ko=lang==="ko";$("tAiKey").textContent=ko?"Claude API 키 (전문가 자문실용 · 이 기기에만 저장)":"Clave API de Claude (sala de expertos · solo en este equipo)";$("tAiModel").textContent=ko?"모델":"Modelo";$("bInst").textContent=ko?"앱 설치":"Instalar";$("tInst").textContent=ko?"앱으로 설치: 안드로이드 크롬은 위의 '앱 설치' 버튼(또는 메뉴 → 홈 화면에 추가), 아이폰 사파리는 공유 → 홈 화면에 추가.":"Instalar como app: en Android (Chrome) use el botón 'Instalar' o menú → Agregar a pantalla de inicio; en iPhone (Safari) Compartir → Agregar a inicio.";
   $("aiMsg").textContent=ko?"키는 이 브라우저에만 저장되고 서버·GitHub에는 올라가지 않습니다. 자문 1건에 대략 US$0.1~0.3 (Sonnet, 웹 검색 최대 5회). Claude Console에서 월 사용 한도를 걸어두세요.":"La clave se guarda solo en este navegador. Cada consulta cuesta aprox. US$0.1–0.3 (Sonnet, hasta 5 búsquedas). Ponga un límite mensual en Claude Console."}
 $("bVz").addEventListener("click",()=>{openDrawer("sq");setTimeout(()=>{const hs=[...$("dBody").querySelectorAll("h3")].find(x=>/VAATZ/.test(x.textContent));if(hs)hs.scrollIntoView({behavior:"smooth"})},80)});
 $("bLang").addEventListener("click",()=>{lang=lang==="ko"?"es":"ko";try{localStorage.setItem("equipo-lang",lang)}catch(e){}if(Z)ST=status(Z);ui()});
