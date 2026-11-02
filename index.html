@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>품질 비서</title>
-<meta name="theme-color" content="#1F3358">
+<meta name="theme-color" content="#0A1222">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -12,39 +12,37 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="품질 비서">
 <style>
-:root{--bg:#EEF0F5;--panel:#FFFFFF;--ink:#1A1F2E;--muted:#5D6578;--line:#C9CEDA;--brand:#1B4B9B;--hi:#D7263D;--mid:#E59500;--ok:#2E8B57;--idle:#8A93A6;--bubble:#FFFFFF;--bubbleInk:#1A1F2E}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151F;--panel:#1B2030;--ink:#E7EAF2;--muted:#9AA3B8;--line:#30374A;--brand:#9DB0EA;--bubble:#FFFFFF;--bubbleInk:#1A1F2E}}
-:root[data-theme="dark"]{--bg:#12151F;--panel:#1B2030;--ink:#E7EAF2;--muted:#9AA3B8;--line:#30374A;--brand:#9DB0EA}
+:root{--bg:#070B14;--panel:#0E1628;--ink:#E6ECF8;--muted:#8C9AB8;--line:#1F2D4D;--brand:#22D3EE;--violet:#8B5CF6;--hi:#FF4D6A;--mid:#FFB020;--ok:#2BD99F;--idle:#5B6B8C;--bubble:#0D1830;--bubbleInk:#E6F6FF;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI","Malgun Gothic",Roboto,"Noto Sans KR",system-ui,sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:#1F3358;color:#fff}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:linear-gradient(90deg,#0A1222,#121F3D 60%,#1B1442);color:#fff;border-bottom:1px solid #22D3EE;box-shadow:0 1px 12px rgba(34,211,238,.25)}
 header h1{font-size:17px;margin:0;letter-spacing:.5px;flex:1;min-width:120px}
-.hbtn{background:#2E3A5E;border:2px solid #4A5A8A;color:#fff;padding:6px 10px;min-height:38px;box-shadow:0 3px 0 #0E1322}
+.hbtn{background:#0E1830;border:1px solid #2A3E6A;color:#E6F6FF;padding:6px 10px;min-height:38px;border-radius:6px;box-shadow:0 0 0 1px rgba(34,211,238,.12) inset}.hbtn:hover{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.35)}
 .hbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #0E1322}
 .src{font-size:12px;padding:3px 8px;border:2px solid #4A5A8A;background:#141A2C}
 .src.demo{border-color:#E59500;color:#FFD27A}
 .src.live{border-color:#2E8B57;color:#8FE3B0}
 main{max-width:1100px;margin:0 auto;padding:12px 16px 40px}
-.stage{position:relative;width:100%;background:#0E1322;border:4px solid #1F3358;box-shadow:0 6px 0 #0B0F1A;overflow:hidden}
+.stage{position:relative;width:100%;background:#05080F;border:1px solid #22D3EE;border-radius:8px;box-shadow:0 0 18px rgba(34,211,238,.25),0 0 40px rgba(139,92,246,.15);overflow:hidden}
 canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
-.bub{position:absolute;transform:translate(-50%,-100%);background:var(--bubble);color:var(--bubbleInk);border:2px solid #1A1F2E;padding:3px 7px;font-size:clamp(9px,1.25vw,13px);line-height:1.25;white-space:nowrap;max-width:22%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
-.bub::after{content:"";position:absolute;left:50%;bottom:-7px;width:8px;height:8px;background:var(--bubble);border-right:2px solid #1A1F2E;border-bottom:2px solid #1A1F2E;transform:translateX(-50%) rotate(45deg)}
-.bub.hi{border-color:var(--hi);color:#A0101F;font-weight:700}
-.bub.mid{border-color:var(--mid)}
-.bub.idle{color:#6B7387}
-.tag{position:absolute;transform:translate(-50%,0);font-size:clamp(8px,1.05vw,11px);color:#F3EBDD;background:rgba(20,26,44,.85);padding:1px 5px;white-space:nowrap;pointer-events:none}
+.bub{position:absolute;transform:translate(-50%,-100%);background:var(--bubble);color:var(--bubbleInk);border:1px solid #22D3EE;border-radius:4px;padding:3px 7px;font-size:clamp(9px,1.25vw,13px);line-height:1.25;white-space:nowrap;max-width:22%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;box-shadow:0 0 8px rgba(34,211,238,.35)}
+.bub::after{content:"";position:absolute;left:50%;bottom:-7px;width:8px;height:8px;background:var(--bubble);border-right:1px solid #22D3EE;border-bottom:1px solid #22D3EE;transform:translateX(-50%) rotate(45deg)}
+.bub.hi{border-color:var(--hi);color:#FF8FA3;font-weight:700;box-shadow:0 0 10px rgba(255,77,106,.5)}.bub.hi::after{border-color:var(--hi)}.bub.ok{border-color:var(--ok)}
+.bub.mid{border-color:var(--mid);box-shadow:0 0 8px rgba(255,176,32,.4)}.bub.mid::after{border-color:var(--mid)}
+.bub.idle{color:#8C9AB8;border-color:#2A3E6A;box-shadow:none}.bub.idle::after{border-color:#2A3E6A}
+.tag{position:absolute;transform:translate(-50%,0);font-size:clamp(8px,1.05vw,11px);color:#A5F3FC;background:rgba(5,8,15,.85);border:1px solid rgba(34,211,238,.35);border-radius:3px;padding:1px 5px;white-space:nowrap;pointer-events:none}
 .roster{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-.card{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--panel);border:2px solid var(--line);padding:10px;min-height:64px;box-shadow:0 3px 0 var(--line)}
-.card:hover{border-color:var(--brand)}
-.card .dot{width:12px;height:12px;flex:none;margin-top:4px;border:2px solid #1A1F2E}
+.card{display:flex;gap:10px;align-items:flex-start;text-align:left;background:linear-gradient(180deg,#0F1A30,#0B1324);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:64px}
+.card:hover{border-color:var(--brand);box-shadow:0 0 12px rgba(34,211,238,.3)}
+.card .dot{width:10px;height:10px;flex:none;margin-top:5px;border-radius:50%;box-shadow:0 0 8px currentColor}
 .card b{display:block;font-size:14px}
 .card span{font-size:13px;color:var(--muted)}
-.lv-hi{background:var(--hi)}.lv-mid{background:var(--mid)}.lv-ok{background:var(--ok)}.lv-idle{background:var(--idle)}
+.lv-hi{background:var(--hi);color:var(--hi)}.lv-mid{background:var(--mid);color:var(--mid)}.lv-ok{background:var(--ok);color:var(--ok)}.lv-idle{background:var(--idle);color:transparent}
 .meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
-.drawer{position:fixed;top:0;right:0;width:min(440px,100%);height:100%;background:var(--panel);border-left:4px solid #1F3358;box-shadow:-6px 0 0 rgba(0,0,0,.15);z-index:20;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .2s steps(4)}
+.drawer{position:fixed;top:0;right:0;width:min(440px,100%);height:100%;background:var(--panel);border-left:1px solid #22D3EE;box-shadow:-8px 0 24px rgba(34,211,238,.18);z-index:20;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .2s steps(4)}
 .drawer.open{transform:none}
-.drawer header{background:#1F3358}
+.drawer header{background:linear-gradient(90deg,#0A1222,#1B1442)}
 .drawer .body{padding:14px 16px;overflow:auto;flex:1}
 .drawer h3{font-size:14px;margin:16px 0 6px}
 .drawer p{margin:6px 0;white-space:pre-line}
@@ -68,20 +66,20 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}
 .set input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);padding:7px}
 .set .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .set .row button{border:2px solid var(--line);background:var(--bg);padding:7px 12px;min-height:40px}
-.set .row button.pri{background:#2B3A67;color:#fff;border-color:#2B3A67}
+.set .row button.pri{background:#0E7490;color:#fff;border-color:#22D3EE}
 .msg{font-size:12px;color:var(--muted);margin-top:6px}
 .frm{display:grid;gap:8px;background:var(--bg);border:2px solid var(--line);padding:10px;margin:6px 0}
 .fl{display:grid;gap:2px;font-size:12px;color:var(--muted)}
 .frm input,.frm select,.frm textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:2px solid var(--line);padding:6px;min-height:38px;width:100%}
 .frm button,.hbtn2{border:2px solid var(--line);background:var(--panel);padding:7px 12px;min-height:40px;justify-self:start;margin-top:8px}
-.frm button.pri,.irow button.pri{background:#1B4B9B;color:#fff;border-color:#1B4B9B}
+.frm button.pri,.irow button.pri{background:linear-gradient(90deg,#0E7490,#5B21B6);color:#fff;border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.3)}
 .irow button:disabled{opacity:.5}
 .vbars{display:flex;gap:4px;align-items:flex-end;height:96px;margin:8px 0 12px;border-bottom:1px solid var(--line)}
 .vbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;font-size:10px;color:var(--muted)}
-.vbar i{display:block;width:70%;background:#1F3358;border-radius:2px 2px 0 0}.vbar:last-child i{background:#B8473F}.vbar span{font-size:10px}
+.vbar i{display:block;width:70%;background:#22D3EE;border-radius:2px 2px 0 0;box-shadow:0 0 6px rgba(34,211,238,.5)}.vbar:last-child i{background:#F472B6}.vbar span{font-size:10px}
 .chipb{border:2px solid var(--line);background:var(--panel);padding:4px 8px;min-height:34px;font-size:13px;margin:3px 4px 0 0}
 .qopts{display:grid;gap:6px;margin-top:8px}.qopts button{text-align:left;border:2px solid var(--line);background:var(--panel);padding:8px;min-height:40px}
-.qok{border-color:#2E8B57!important;background:#E3F4EA!important;color:#1A1F2E}.qng{border-color:#D7263D!important;background:#FBE4E7!important;color:#1A1F2E}
+.qok{border-color:#2BD99F!important;background:#0B3B2E!important;color:#E6ECF8}.qng{border-color:#FF4D6A!important;background:#3B0B16!important;color:#E6ECF8}
 .icard small{display:block;margin-top:4px}
 .ci{flex:none;display:block}
 .ans{border:2px solid var(--line);background:var(--panel);padding:10px;margin-top:10px}
@@ -460,13 +458,13 @@ function analyze(recs){const now=Date.now(),t0=dayStart(now),wk=isoWeek(now);con
   return {now,wk,today,thisW,noLoc,noPhotoF,moved,alerts,top3,topPrev,d8,sup,byProc,issues,chg,eff,iqc}}
 
 const AG=[
- {id:"insp",role:{ko:"검사 담당 (순회·수입)",es:"Inspección (patrulla y recibo)"},tagL:{ko:"검사",es:"Inspección"},desk:0,look:{hair:"#3B2A20",skin:"#F1C9A5",style:"ponytail",top:{k:"uniform",c:"#1F3358"},acc:["lash","buds"],chair:"#C0392B"}},
- {id:"ana",role:{ko:"분석·보고 담당",es:"Análisis y reportes"},tagL:{ko:"분석·보고",es:"Análisis"},desk:1,look:{hair:"#2A1E1A",skin:"#F0C4A0",style:"long",top:{k:"uniform",c:"#1F3358"},acc:["lash","round"],ac:"#E5452B",chair:"#2E86C1"}},
- {id:"d8",role:{ko:"8D·사례 담당",es:"8D y casos"},tagL:{ko:"8D·사례",es:"8D / casos"},desk:2,look:{hair:"#7A3B1C",skin:"#D99A6C",style:"short",top:{k:"uniform",c:"#1F3358"},acc:["stubble"],ac:"#E5452B",chair:"#E67E22"}},
- {id:"sq",role:{ko:"협력사·고객 담당",es:"Proveedores y cliente"},tagL:{ko:"협력사·고객",es:"Prov. / cliente"},desk:3,look:{hair:"#4A2C1E",skin:"#D9A27A",style:"bob",top:{k:"uniform",c:"#1F3358"},acc:["lash","headset","lanyard"],chair:"#27AE60"}},
- {id:"fu",role:{ko:"변경점·유효성 담당",es:"Cambios 4M y efectividad"},tagL:{ko:"변경점·유효성",es:"4M / efectividad"},desk:4,look:{hair:"#3B2A20",skin:"#E8B48A",style:"fade",top:{k:"uniform",c:"#1F3358"},acc:["glasses"],chair:"#8E44AD"}},
- {id:"qa",role:{ko:"품질보증 담당 (문서)",es:"Aseguramiento de calidad (documentos)"},tagL:{ko:"품질보증",es:"Aseguramiento"},desk:5,look:{hair:"#1E1E28",skin:"#E3B08A",style:"buzz",top:{k:"uniform",c:"#1F3358"},acc:["lanyard"],chair:"#C0392B"}},
- {id:"qc",role:{ko:"품질관리 담당 (문서)",es:"Control de calidad (documentos)"},tagL:{ko:"품질관리",es:"Control"},desk:6,look:{hair:"#5A3322",skin:"#F2CDAE",style:"bun",top:{k:"uniform",c:"#1F3358"},acc:["lash","sgup"],chair:"#2E86C1"}},
+ {id:"insp",role:{ko:"검사 담당 (순회·수입)",es:"Inspección (patrulla y recibo)"},tagL:{ko:"검사",es:"Inspección"},desk:0,look:{android:true,askin:"#2DD4BF",aeyes:"two",aant:"bulbs",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#E8EEF7",eyes:"dot",ant:"single",plates:"#14B8A6",hair:"#3B2A20",skin:"#2DD4BF",style:"ponytail",top:{k:"uniform",c:"#1F3358"},acc:["lash","buds"],chair:"#C0392B"}},
+ {id:"ana",role:{ko:"분석·보고 담당",es:"Análisis y reportes"},tagL:{ko:"분석·보고",es:"Análisis"},desk:1,look:{android:true,askin:"#A78BFA",aeyes:"three",aant:"gem",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#34405E",eyes:"visor",ant:"none",plates:"#8B5CF6",hair:"#2A1E1A",skin:"#A78BFA",style:"long",top:{k:"uniform",c:"#1F3358"},acc:["lash","round"],ac:"#E5452B",chair:"#2E86C1"}},
+ {id:"d8",role:{ko:"8D·사례 담당",es:"8D y casos"},tagL:{ko:"8D·사례",es:"8D / casos"},desk:2,look:{android:true,askin:"#84CC16",aeyes:"one",aant:"single",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#A9B8D4",eyes:"bar",ant:"twin",hair:"#7A3B1C",skin:"#84CC16",style:"short",top:{k:"uniform",c:"#1F3358"},acc:["stubble"],ac:"#E5452B",chair:"#E67E22"}},
+ {id:"sq",role:{ko:"협력사·고객 담당",es:"Proveedores y cliente"},tagL:{ko:"협력사·고객",es:"Prov. / cliente"},desk:3,look:{android:true,askin:"#FB7185",aeyes:"two",aant:"fins",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#F1F4FA",eyes:"arc",ant:"none",plates:"#C084FC",hair:"#4A2C1E",skin:"#FB7185",style:"bob",top:{k:"uniform",c:"#1F3358"},acc:["lash","headset","lanyard"],chair:"#27AE60"}},
+ {id:"fu",role:{ko:"변경점·유효성 담당",es:"Cambios 4M y efectividad"},tagL:{ko:"변경점·유효성",es:"4M / efectividad"},desk:4,look:{android:true,askin:"#60A5FA",aeyes:"two",aant:"bulbs",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#56658A",eyes:"bar",ant:"fin",hair:"#3B2A20",skin:"#60A5FA",style:"fade",top:{k:"uniform",c:"#1F3358"},acc:["glasses"],chair:"#8E44AD"}},
+ {id:"qa",role:{ko:"품질보증 담당 (문서)",es:"Aseguramiento de calidad (documentos)"},tagL:{ko:"품질보증",es:"Aseguramiento"},desk:5,look:{android:true,askin:"#F59E0B",aeyes:"one",aant:"fins",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#DCE6F7",eyes:"visor",ant:"single",hair:"#1E1E28",skin:"#F59E0B",style:"buzz",top:{k:"uniform",c:"#1F3358"},acc:["lanyard"],chair:"#C0392B"}},
+ {id:"qc",role:{ko:"품질관리 담당 (문서)",es:"Control de calidad (documentos)"},tagL:{ko:"품질관리",es:"Control"},desk:6,look:{android:true,askin:"#34D399",aeyes:"three",aant:"bulbs",shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#2E3A57",eyes:"dot",ant:"twin",plates:"#2DD4BF",hair:"#5A3322",skin:"#34D399",style:"bun",top:{k:"uniform",c:"#1F3358"},acc:["lash","sgup"],chair:"#2E86C1"}},
  {id:"exp",role:{ko:"전문가 자문실",es:"Sala de expertos"},room:true,look:{}}];
 const AGI={};AG.forEach(a=>AGI[a.id]=a);
 
@@ -592,7 +590,7 @@ function person(x,y,lk,frame,sitting,carry){const ox=Math.round(x)-9,oy=Math.rou
   if(k==="hoodie"||k==="vest"){P(3,15,18,3.5,OUT);P(4,15.5,16,2.5,Cs);P(9,18,0.8,5,"#F4F4F4");P(14.2,18,0.8,5,"#F4F4F4");P(7,24,10,3.5,Cs);P(7,24,10,0.6,shade(C,-0.38))}
   if(k==="vest"){const V=tp.v||"#C8F031";P(4,18,5,bh,V);P(15,18,5,bh,V);P(4,23,5,1.3,"#E8EEF2");P(15,23,5,1.3,"#E8EEF2")}
   if(k==="tee"){P(9,17,6,1.3,Cs);if(tp.p){P(9,20,6,4,tp.p);P(10,21,4,2,shade(tp.p,0.45))}}
-  if(k==="uniform"){P(7,16,4,3,shade(C,0.32));P(13,16,4,3,shade(C,0.32));P(7,18.5,4,0.6,Cs);P(13,18.5,4,0.6,Cs);P(10,16.5,4,2.5,"#F4F6F8");P(11,19,2,1.2,"#F4F6F8");P(10,16.5,4,0.6,"#C9CFD8");P(11.7,20,0.7,bh-2,"#8E97AB");P(11.7,20,0.7,0.7,"#D9DEE7");P(14.3,20.6,4.2,2.2,"#FFFFFF");P(14.6,21.6,3.6,0.8,"#1B4B9B");P(15.6,20.8,2,0.6,CI.red);if(bh>11){P(5,25.5,4.5,0.7,Cs);P(14.5,25.5,4.5,0.7,Cs)}P(4,18,1,bh,Cl)}
+  if(k==="uniform"){P(7,16,4,3,shade(C,0.32));P(13,16,4,3,shade(C,0.32));P(7,18.5,4,0.6,Cs);P(13,18.5,4,0.6,Cs);P(10,16.5,4,2.5,"#F4F6F8");P(11,19,2,1.2,"#F4F6F8");P(10,16.5,4,0.6,"#C9CFD8");P(11.7,20,0.7,bh-2,"#7FE9F7");P(11.7,20,0.7,0.7,"#E0FBFF");P(4,18,3,0.6,"#22D3EE");P(17,18,3,0.6,"#22D3EE");P(4,18+bh-1,16,0.6,"#8B5CF6");P(14.3,20.6,4.2,2.2,"#FFFFFF");P(14.6,21.6,3.6,0.8,"#1B4B9B");P(15.6,20.8,2,0.6,CI.red);if(bh>11){P(5,25.5,4.5,0.7,Cs);P(14.5,25.5,4.5,0.7,Cs)}P(4,18,1,bh,Cl)}
   if(k==="jacket"){P(10,17,4,bh,tp.i||"#F4F4F4");P(9,17,1,bh,Cs);P(14,17,1,bh,Cs);P(5,16.5,5,2,Cl);P(14,16.5,5,2,Cl)}
   if(k==="flannel"){const Ln=shade(C,-0.38);for(let i=5;i<20;i+=3)P(i,18,0.7,bh,Ln);for(let j=19;j<18+bh;j+=3)P(4,j,16,0.7,Ln);P(10,17,4,4,tp.i||"#2B2B2B")}
   if(k==="blazer"){P(9,17,6,bh,"#F4F6F8");P(8,17,2,7,Cs);P(14,17,2,7,Cs);if(tp.tie){P(11,18,2,2,shade(tp.tie,-0.2));P(11,20,2,6,tp.tie)}}
@@ -600,6 +598,7 @@ function person(x,y,lk,frame,sitting,carry){const ox=Math.round(x)-9,oy=Math.rou
   if(has("lanyard")){const Lc=lk.lan||CI.blue;P(8,17,1,5,Lc);P(15,17,1,5,Lc);P(9,21.5,6,1,Lc);P(10,22,4,5,OUT);P(10.5,22.5,3,4,"#FFFFFF");P(11,23,2,1,CI.red)}
   const tw=sitting?(frame%2):0;P(0,19,4,8,OUT);P(1,19,2,7,C);P(1,19,1,4,Cl);P(20,19,4,8,OUT);P(21,19,2,7,C);
   P(0,26-tw,4,3,OUT);P(1,26-tw,2,2,Sk);P(20,25+tw,4,3,OUT);P(21,25+tw,2,2,Sk);
+  if(lk.android){(HEADSTYLE==='alien'?alienHead:HEADSTYLE==='helmet'?helmetHead:androidHead)(P,lk,frame)}else{
   // head
   P(4,0,16,1,OUT);P(2,1,2,1,OUT);P(20,1,2,1,OUT);P(1,2,1,13,OUT);P(22,2,1,13,OUT);P(2,15,2,1,OUT);P(20,15,2,1,OUT);P(4,16,16,1,OUT);
   P(4,1,16,1,Sk);P(2,2,20,13,Sk);P(4,15,16,1,Sk);P(2,13,20,2,Ss);P(10,16.5,4,1,Ss);P(0,8,1,4,OUT);P(1,8,1,4,Sk);P(23,8,1,4,OUT);P(22,8,1,4,Sk);
@@ -622,14 +621,14 @@ function person(x,y,lk,frame,sitting,carry){const ox=Math.round(x)-9,oy=Math.rou
   if(has("sgup")){P(5,0.5,14,3,OUT);P(5.5,1,13,2,"rgba(200,240,255,.75)")}
   if(has("phones")){P(1,-3,22,1.6,OUT);P(2,-2.6,20,0.8,"#2A2A2A");P(-1.5,5,4.5,8,OUT);P(-1,5.5,3.5,7,AC);P(21,5,4.5,8,OUT);P(21.5,5.5,3.5,7,AC)}
   if(has("headset")){P(2,-1.5,20,1.5,"#2A2A2A");P(-1,6,3,6,"#2A2A2A");P(22,6,3,6,"#2A2A2A");P(22,12,1,3,"#2A2A2A");P(17,14.5,6,1,"#2A2A2A");P(16,14,2,2,CI.red)}
-  if(has("buds")){P(0.3,9.5,1.6,1.6,"#FFFFFF");P(22.1,9.5,1.6,1.6,"#FFFFFF")}
+  if(has("buds")){P(0.3,9.5,1.6,1.6,"#FFFFFF");P(22.1,9.5,1.6,1.6,"#FFFFFF")}}
   if(carry){P(16,19,9,11,OUT);if(lk.hold==="tablet"){P(17,20,7,9,"#1B1F2A");P(17.8,20.8,5.4,7.4,"#3FA9FF")}else{P(17,20,7,9,"#FFFFFF");P(18,22,5,0.8,"#9AA3B1");P(18,24,5,0.8,"#9AA3B1");P(18,26,3,0.8,"#9AA3B1")}}}
 function zz(x,y,tick){const k=Math.floor(tick/6)%3;cx.fillStyle="#EAF0FA";cx.font="bold 6px monospace";cx.fillText("z",x+8+k,y-1-k*2);if(k>0){cx.font="bold 4px monospace";cx.fillText("z",x+12+k,y-4-k*2)}}
 
 /* ---------- expert room (glass room, bottom right) ---------- */
-const XGROUP=[{id:"eq",name:{ko:"설비·전기",es:"Equipos y eléctrico"},keys:["sens","motor","log"],x:250,lk:{skin:"#E8C2A0",hair:"#B9BEC6",style:"short",top:{k:"blazer",c:"#2B3A67",tie:CI.red},acc:["glasses"]}},
- {id:"pl",name:{ko:"플라스틱 (사출·융착·화학)",es:"Plásticos (inyección, soldadura, química)"},keys:["iny","pweld","chem"],x:273,lk:{skin:"#F1D0B0",hair:"#2B2230",style:"bun",top:{k:"labcoat",c:"#F4F6F8",i:"#B07CFF"},acc:["round"]}},
- {id:"al",name:{ko:"알루미늄 배관 (가공·브레이징·누설)",es:"Tubo de aluminio (conformado, brazing, fugas)"},keys:["bend","crimp","braz","hld"],x:296,lk:{skin:"#C68E63",hair:"#8E8E8E",style:"buzz",top:{k:"flannel",c:"#A63A2F",i:"#2B2B2B"},acc:["beard","sgup"]}}];
+const XGROUP=[{id:"eq",name:{ko:"설비·전기",es:"Equipos y eléctrico"},keys:["sens","motor","log"],x:250,lk:{android:true,shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#9FB0CF",eyes:"bar",ant:"twin",skin:"#38BDF8",askin:"#38BDF8",aeyes:"two",aant:"single",hair:"#B9BEC6",style:"short",top:{k:"blazer",c:"#2B3A67",tie:CI.red},acc:["glasses"]}},
+ {id:"pl",name:{ko:"플라스틱 (사출·융착·화학)",es:"Plásticos (inyección, soldadura, química)"},keys:["iny","pweld","chem"],x:273,lk:{android:true,shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#F1F4FA",eyes:"dot",ant:"single",plates:"#8B5CF6",skin:"#F472B6",askin:"#F472B6",aeyes:"three",aant:"gem",hair:"#2B2230",style:"bun",top:{k:"labcoat",c:"#F4F6F8",i:"#B07CFF"},acc:["round"]}},
+ {id:"al",name:{ko:"알루미늄 배관 (가공·브레이징·누설)",es:"Tubo de aluminio (conformado, brazing, fugas)"},keys:["bend","crimp","braz","hld"],x:296,lk:{android:true,shoes:"#2A3550",shoeAcc:"#22D3EE",pants:"#1A2442",shell:"#3B4766",eyes:"visor",ant:"fin",skin:"#4ADE80",askin:"#4ADE80",aeyes:"one",aant:"bulbs",hair:"#8E8E8E",style:"buzz",top:{k:"flannel",c:"#A63A2F",i:"#2B2B2B"},acc:["beard","sgup"]}}];
 function expertRoom(Z,tick){const x0=RM.x0,y0=RM.y0;
   carpet();for(let i=0;i<4;i++)R(x0+6+i*22,y0+4,8,0.5,"rgba(255,255,255,.35)");
   // glass walls + door
@@ -731,6 +730,201 @@ function fxItem(key,bb,fn,sh){if(!FX){FX=document.createElement("canvas");FX.wid
     const id=fxc.getImageData(X,Y,W,H);if(sh)runShade(id);selout(id);c=document.createElement("canvas");c.width=W;c.height=H;c.getContext("2d").putImageData(id,0,0);c._x=X;c._y=Y;
     if(key){if(FXC.size>500)FXC.clear();FXC.set(key,c)}}
   cx.save();cx.setTransform(1,0,0,1,0,0);cx.drawImage(c,c._x,c._y);cx.restore()}
+/* ---------- v1.7 theme: deep-space station, navy + neon cyan/violet (gaming-PC style lighting) ---------- */
+const SP={void:"#05080F",navy:"#0B1428",navy2:"#13213F",panel:"#0E1830",seam:"#070D1A",rim:"#2A3E6A",cyan:"#22D3EE",cyanD:"#0E7490",violet:"#8B5CF6",violetD:"#4C1D95",steel:"#5B6B8C",steelL:"#8FA0C4"};
+function neonH(x,y,w,c,a){R(x,y-1,w,0.5,"rgba(34,211,238,"+(a||0.18)+")");R(x,y,w,0.5,c||SP.cyan);R(x,y+0.5,w,0.5,"rgba(34,211,238,"+((a||0.18)*0.7)+")")}
+function stationBase(){
+  // wall: dark armour panels with seams and rivets
+  R(0,0,VW,46,SP.navy);for(let x=0;x<VW;x+=20){R(x,0,0.5,42,SP.seam);R(x+0.5,0,0.5,42,"#16254A")}
+  for(let x=0;x<VW;x+=20){R(x+2,3,0.5,0.5,SP.steel);R(x+17,3,0.5,0.5,SP.steel);R(x+2,38,0.5,0.5,SP.steel);R(x+17,38,0.5,0.5,SP.steel)}
+  R(0,0,VW,2,SP.void);R(0,2,VW,0.5,SP.rim);
+  R(0,40,VW,6,"#091022");R(0,40,VW,0.5,SP.rim);neonH(0,43,VW);
+  // floor: metal deck plates, seams, faint holo grid
+  for(let y=46;y<VH;y+=12)for(let x=0;x<VW;x+=16){const v=hash(x*7+y*13);R(x,y,16,12,v<0.5?"#0A1224":"#0C152B");R(x,y,16,0.5,"#14203C");R(x,y,0.5,12,"#14203C");R(x+15.5,y,0.5,12,SP.seam);R(x,y+11.5,16,0.5,SP.seam);
+    if(v>0.82){R(x+2,y+2,0.5,0.5,SP.steel);R(x+13,y+2,0.5,0.5,SP.steel);R(x+2,y+9,0.5,0.5,SP.steel);R(x+13,y+9,0.5,0.5,SP.steel)}
+    if(v<0.06){R(x+4,y+4,8,4,"#0F1B36");for(let k=0;k<4;k++)R(x+4.5+k*2,y+4.5,1,3,"#081020")}}
+  for(let x=0;x<VW;x+=32)R(x,46,0.5,VH-46,"rgba(34,211,238,.05)");for(let y=58;y<VH;y+=24)R(0,y,VW,0.5,"rgba(34,211,238,.04)");
+  for(let i=0;i<4;i++)R(0,46+i*0.5,VW,0.5,"rgba(34,211,238,"+(0.16-i*0.04)+")")}
+function spaceWindow(x,y,w,h,tk){R(x-1.5,y-1.5,w+3,h+3,"#04070D");R(x-1,y-1,w+2,h+2,SP.rim);R(x,y,w,h,"#060A1A");
+  for(let i=0;i<h;i+=0.5){const t=i/h;R(x,y+i,w,0.5,"rgba("+Math.round(30+60*t)+","+Math.round(20+10*t)+","+Math.round(80+50*t)+","+(0.35+0.4*t)+")")}
+  // nebula haze
+  for(let i=0;i<40;i++){const a=hash(i*31),b=hash(i*17+3);R(x+Math.floor(a*w*2)/2,y+Math.floor(b*h*2)/2,2+hash(i)*5,1+hash(i*2)*2,"rgba(139,92,246,"+(0.08+0.1*hash(i*5))+")")}
+  // stars (twinkle)
+  for(let i=0;i<46;i++){const sx=x+Math.floor(hash(i*97+1)*w*2)/2,sy=y+Math.floor(hash(i*53+7)*h*2)/2;const on=((tk>>2)+i)%9!==0;R(sx,sy,0.5,0.5,on?(i%7===0?"#9FE8FF":"#FFFFFF"):"#5B6B8C");if(i%11===0&&on){R(sx-0.5,sy,1.5,0.5,"rgba(255,255,255,.5)");R(sx,sy-0.5,0.5,1.5,"rgba(255,255,255,.5)")}}
+  // planet with ring
+  const px=x+w*0.74,py=y+h*0.62,pr=h*0.36;for(let i=-pr;i<=pr;i+=0.5){const hw=Math.sqrt(Math.max(0,pr*pr-i*i));const t=(i+pr)/(2*pr);R(Math.round((px-hw)*2)/2,py+i,Math.round(hw*4)/2,0.5,t<0.3?"#3B5BA5":t<0.65?"#2A4380":"#1A2B57");R(Math.round((px-hw)*2)/2,py+i,1,0.5,"rgba(34,211,238,.55)")}
+  for(let a=0;a<6.283;a+=0.05){const rx=px+Math.cos(a)*pr*1.7,ry=py+Math.sin(a)*pr*0.42;if(Math.sin(a)<0&&Math.hypot(rx-px,ry-py)<pr)continue;R(Math.round(rx*2)/2,Math.round(ry*2)/2,0.5,0.5,"rgba(143,160,196,.85)")}
+  // frame struts
+  R(x+w/2-0.5,y,1,h,SP.rim);R(x,y+h-0.5,w,0.5,SP.cyanD);R(x,y,w,0.5,"rgba(255,255,255,.15)")}
+function holoBoard(x,y,w,h,Z,tk){R(x-0.5,y-0.5,w+1,h+1,"#04070D");R(x,y,w,h,"rgba(14,116,144,.25)");R(x,y,w,0.5,SP.cyan);R(x,y+h-0.5,w,0.5,SP.cyan);R(x,y,0.5,h,SP.cyanD);R(x+w-0.5,y,0.5,h,SP.cyanD);
+  for(let i=1;i<h;i+=2)R(x+0.5,y+i,w-1,0.5,"rgba(34,211,238,.05)");
+  R(x+4,y+3,24,1.2,SP.cyan);R(x+4,y+6,14,0.8,"#3A6E8F");
+  const days=[];for(let i=6;i>=0;i--){const a=dayStart(Z.now-i*864e5),b=a+864e5;days.push(S.recs.filter(r=>r.ts>=a&&r.ts<b&&clsOf(r.type)!=="S").reduce((q,r)=>q+r.qty*WGT[clsOf(r.type)],0))}
+  const mx=Math.max(1,...days);const bx=x+w-60,by=y+h-4;days.forEach((v,i)=>{const hh=Math.max(1,Math.round(v/mx*(h-12)));R(bx+i*8,by-hh,5,hh,i===6?"#F472B6":SP.cyan);R(bx+i*8,by-hh,5,0.5,"#E0FBFF");R(bx+i*8-0.5,by-hh,6,hh,"rgba(34,211,238,.12)")});R(bx-2,by,58,0.5,"#3A6E8F");
+  if((tk>>3)%2)R(x+w-4,y+3,1.5,1.5,"#F472B6")}
+function digiClock(x,y){R(x,y,26,12,"#04070D");R(x+0.5,y+0.5,25,11,"#0A1428");R(x+0.5,y+0.5,25,0.5,SP.rim);const d=new Date();cx.save();cx.font="bold 7px monospace";cx.textBaseline="alphabetic";cx.fillStyle=SP.cyan;cx.fillText(pad(d.getHours())+":"+pad(d.getMinutes()),x+3,y+9);cx.restore()}
+function serverRack(x,y,tk){R(x-0.5,y-0.5,25,41,"#04070D");R(x,y,24,40,"#0D1529");R(x,y,24,0.5,SP.rim);
+  for(let r=0;r<7;r++){const ry=y+2+r*5.4;R(x+2,ry,20,4.4,"#121D38");R(x+2,ry,20,0.5,"#1D2C52");for(let k=0;k<4;k++){const on=hash(r*7+k+(tk>>2))>0.45;R(x+4+k*2.2,ry+1.8,1,1,on?(k===0?"#2BD99F":SP.cyan):"#18304A")}R(x+14,ry+1.5,6,1.5,"#0A1222")}}
+function bulkhead(x,y,tk){R(x-1,y-1,30,37,"#04070D");R(x,y,28,36,"#111B33");R(x+2,y+3,24,33,"#0B1428");R(x+13.75,y+3,0.5,33,"#04070D");
+  R(x+2,y+3,11.5,33,"#15234A");R(x+14.5,y+3,11.5,33,"#15234A");R(x+2,y+3,24,0.5,SP.rim);for(let k=0;k<4;k++){R(x+4,y+8+k*7,7,0.5,"#1F315E");R(x+17,y+8+k*7,7,0.5,"#1F315E")}
+  const on=(tk>>3)%2;R(x+1,y+1,26,1,on?SP.violet:"#5B3DB0");R(x+22,y+18,2,3,"#04070D");R(x+22.5,y+18.5,1,2,on?"#2BD99F":"#1A6E56")}
+function doowonPlate(x,y){R(x-0.5,y-0.5,47,16,"#04070D");R(x,y,46,15,"#0A1428");R(x,y,46,0.5,SP.cyan);R(x,y+14.5,46,0.5,SP.cyanD);R(x+1,y+1,44,13,"#F4F6FA");
+  cx.save();cx.font="italic 900 7px Arial,Helvetica,sans-serif";cx.textBaseline="alphabetic";cx.fillStyle=CI.blue;cx.fillText("DOOWON",x+3.5,y+11);cx.strokeStyle=CI.red;cx.lineWidth=1.1;cx.beginPath();cx.moveTo(x+17.5,y+5);cx.quadraticCurveTo(x+24.5,y+1.4,x+32.5,y+4.4);cx.stroke();cx.restore();
+  R(x-2,y+15,50,1.5,"rgba(34,211,238,.12)")}
+function plant(x,y){shadowE(x,y+16,6,1.5,0.4);R(x-4.5,y+7.5,9,9,"#04070D");R(x-4,y+8,8,8,"#121D38");R(x-4,y+11,8,1,SP.cyan);R(x-4,y+12,8,0.5,"rgba(34,211,238,.3)");R(x-4,y+8,8,0.5,"#2A3E6A");
+  [[0,-3,"#14B8A6"],[-3,0,"#0F766E"],[3,0,"#0F766E"],[-2,3,"#14B8A6"],[2,3,"#14B8A6"],[0,1,"#5EEAD4"],[-1,-1,"#2DD4BF"],[1,-5,"#2DD4BF"]].forEach(([a,b,c])=>{R(x+a-1.5,y+b-0.5,4,5,"#04121A");R(x+a-1,y+b,3,4,c);R(x+a-1,y+b,1,1,"#CCFBF1")});R(x,y-6,0.5,3,"#99F6E4")}
+function room(Z,tick){cachedLayer("station",stationBase);
+  spaceWindow(8,6,86,31,tick);doowonPlate(100,6);digiClock(110,25);holoBoard(150,5,88,33,Z,tick);serverRack(246,4,tick);bulkhead(282,9,tick);
+  plant(6,150);expertRoom(Z,tick)}
+function chair(x,y,col){R(x-9.5,y+1.5,19,16,"#03060C");R(x-9,y+2,18,15,"#0D1424");R(x-8,y+2.5,16,13.5,"#151F38");R(x-8,y+2.5,16,0.5,"#2A3B66");R(x-6,y+3,1,12.5,SP.cyan);R(x+5,y+3,1,12.5,SP.cyan);R(x-5,y+3,0.5,12.5,"rgba(34,211,238,.35)")}
+function desk(x,y,lv,blink,id){const L=LVC[lv];
+  R(x-23.5,y+17.5,47,5,"#03060C");R(x-23,y+18,46,4,"#111A30");R(x-23,y+18,46,0.5,"#2A3B66");R(x-23,y+21.5,46,0.5,"#080E1C");
+  R(x-23.5,y+22,47,9.5,"#03060C");R(x-23,y+22,46,9,"#0B1326");R(x-23,y+22,46,0.5,"#1A2850");
+  R(x-23,y+22.5,46,0.8,L);R(x-23,y+23.3,46,0.5,"rgba(0,0,0,.35)");R(x-23,y+21.8,46,0.6,"rgba(255,255,255,.08)");
+  [-21,3].forEach(dx=>{R(x+dx,y+25,18,5,"#0E1830");R(x+dx,y+25,18,0.5,"#1F315E");R(x+dx,y+29.5,18,0.5,"#050A14");R(x+dx+7,y+27,4,0.8,"#3B4F7E")});
+  [[-22.5],[19]].forEach(([dx])=>{R(x+dx,y+31,3.5,5.5,"#03060C");R(x+dx+0.5,y+31,2.5,5,"#1A2850");R(x+dx+0.5,y+31,0.5,5,"#2E4478")});
+  R(x-23.5,y+6.5,15,12,"#03060C");R(x-23,y+7,14,11,"#0D1424");R(x-23,y+7,14,0.5,"#2A3B66");R(x-22,y+8,12,8.5,blink?"#060A14":"#071226");
+  if(!blink){[2.5,4,3,5].forEach((hh,i)=>R(x-20.5+i*2.5,y+15.5-hh,1.5,hh,L));R(x-21.5,y+8.5,10,0.5,"rgba(34,211,238,.35)");R(x-22,y+8,12,8.5,"rgba(34,211,238,.06)")}
+  R(x-17.5,y+16.5,3,1.5,"#0D1424");R(x-19.5,y+17.5,7,0.5,SP.cyanD);
+  R(x-5.5,y+18,11,2,"#03060C");R(x-5,y+18.5,10,1,"#1A2850");for(let i=0;i<5;i++)R(x-4.5+i*2,y+18.5,0.5,0.5,i%2?SP.violet:SP.cyan);
+  R(x+11,y+15,8,3,"#1A2850");R(x+11,y+15,8,0.5,"#3B4F7E");R(x+12,y+16,5,0.5,SP.cyan);
+  const P2={insp:"#F5C400",ana:"#2BD99F",d8:"#F472B6",sq:"#60A5FA",fu:"#A78BFA",qa:"#F87171",qc:"#5EEAD4"}[id]||SP.cyan;R(x+19,y+11.5,3.5,6,"#03060C");R(x+19.5,y+12,2.5,5,P2);R(x+19.5,y+12,2.5,0.6,"#FFFFFF")}
+function shadowE(x,y,rx,ry,a){for(let i=-ry;i<=ry;i+=0.5){const w=rx*Math.sqrt(Math.max(0,1-(i/(ry+0.25))*(i/(ry+0.25))));if(w<0.5)continue;const X=Math.round((x-w)*2)/2,W=Math.round(w*4)/2;R(X,y+i,W,0.5,"rgba(0,0,0,"+(a||0.3)+")");R(X-1,y+i,1,0.5,"rgba(34,211,238,.10)");R(X+W,y+i,1,0.5,"rgba(34,211,238,.10)")}}
+function expertRoom(Z,tick){const x0=RM.x0,y0=RM.y0;R(x0,y0,VW-x0,VH-y0,"#070C1A");
+  for(let y=y0+3;y<VH;y+=6)for(let x=x0+3+((y-y0)/6%2)*3;x<VW;x+=6){R(x,y,1,0.5,"rgba(139,92,246,.35)");R(x+0.5,y+0.5,0.5,0.5,"rgba(34,211,238,.25)")}
+  R(x0-1.5,y0-1.5,VW-x0+1.5,3,"rgba(34,211,238,.25)");R(x0-1.5,y0-1.5,VW-x0+1.5,0.7,SP.cyan);R(x0-1.5,y0,3,VH-y0,"rgba(34,211,238,.25)");R(x0-1.5,y0,0.7,VH-y0,SP.cyan);
+  for(let i=0;i<4;i++)R(x0+6+i*22,y0+4,8,0.5,"rgba(255,255,255,.25)");R(x0-2,RM.door-10,4,22,"rgba(139,92,246,.55)");R(x0+0.5,RM.door,1,4,SP.violet);
+  const c=RM.cx,cy=RM.ty;const busy=S.aiBusy;for(let i=0;i<14;i+=0.5){const w=6+i*1.6;R(Math.round((c-w)*2)/2,cy-6-i,Math.round(w*4)/2,0.5,"rgba(34,211,238,"+((busy?0.11:0.05)*(1-i/14))+")")}
+  R(VW-10,y0+3,6,6,"#04070D");R(VW-9.5,y0+3.5,5,5,(tick>>3)%2?SP.violet:"#5B3DB0")}
+function tableTop(){const c=RM.cx,cy=RM.ty;shadowE(c,cy+11,30,2.5,0.45);
+  for(let i=-9;i<=9;i+=0.5){const w=34*Math.sqrt(Math.max(0,1-(i/9.5)*(i/9.5)));const x0=Math.round((c-w)*2)/2,ww=Math.round(w*4)/2;R(x0-0.5,cy+i,ww+1,0.5,"#03060C");R(x0,cy+i,ww,0.5,i<-7?"#2A3B66":i<6?"#111A30":i<7.5?SP.cyan:"#0B1326")}
+  R(c-2.5,cy+9,5,6,"#03060C");R(c-2,cy+9,4,6,"#1A2850");
+  [[-30,-6],[-5,-7],[20,-6]].forEach(([a,b],i)=>{const glow=S.aiBusy&&((tick>>2)+i)%3===0;R(c+a-0.5,cy+b-0.5,10,6,"#03060C");R(c+a,cy+b,9,5,"#0D1424");R(c+a+0.7,cy+b+0.7,7.6,3.4,glow?"#F472B6":SP.cyan);R(c+a+1,cy+b+1,2,0.5,"rgba(255,255,255,.6)")});
+  [[-14,1],[10,2]].forEach(([a,b])=>{R(c+a,cy+b,6,3.5,"rgba(34,211,238,.35)");R(c+a,cy+b,6,0.5,SP.cyan)})}
+/* ---------- v1.7: process analysis straight from the heatmap data (no manual input) ---------- */
+// control-chart rules applied automatically to each machine's daily defect count (last 28 days)
+function trendSignals(){const D=864e5,now=Date.now(),t0=dayStart(now)-27*D;const by={};
+  S.recs.forEach(r=>{if(r.ts<t0||clsOf(r.type)==="S")return;const k=r.omach||procName(r.oproc);if(!k)return;const i=Math.floor((r.ts-t0)/D);if(i<0||i>27)return;
+    const o=by[k]=by[k]||{ser:new Array(28).fill(0),types:{}};o.ser[i]+=r.qty;o.types[r.type]=(o.types[r.type]||0)+r.qty});
+  const out=[];Object.entries(by).forEach(([k,o])=>{const tot=o.ser.reduce((a,b)=>a+b,0);if(tot<10)return;const R=spcCalc({n:1,rows:o.ser.map(v=>[v])},null,null);if(R.err)return;
+    const last=27,rec=i=>i>=last-6;const rules=["R1","R2","R3","R5"].filter(r=>R.V[r]&&[...R.V[r]].some(i=>rec(i)&&o.ser[i]>R.cl));
+    if(rules.includes("R3")&&!(o.ser[last]>o.ser[last-6]))rules.splice(rules.indexOf("R3"),1);
+    if(!rules.length)return;const tp=Object.entries(o.types).sort((a,b)=>b[1]-a[1])[0];
+    out.push({key:k,rules,cl:R.cl,ucl:R.ucl,last7:o.ser.slice(-7),top:tp?tp[0]:"",tot})});
+  return out.sort((a,b)=>b.rules.length-a.rules.length||b.tot-a.tot).slice(0,6)}
+const RULEKO={R1:{ko:"관리한계 초과",es:"Fuera de límite"},R2:{ko:"평균 위로 7일 연속",es:"7 días sobre el promedio"},R3:{ko:"7일 연속 증가",es:"7 días subiendo"},R5:{ko:"한계 근접 반복",es:"Cerca del límite"}};
+function trendText(sig){return sig.map(s=>`${s.key}: ${s.rules.map(r=>RULEKO[r].ko).join("·")} (최근 7일 ${s.last7.join(", ")} / 평균 ${s.cl.toFixed(1)}, 상한 ${s.ucl.toFixed(1)}, 주요 불량 ${typeName(s.top)})`).join("\n")}
+function anaData(){const ko=true;const L=[heatSummary()];
+  L.push("\n[설비·공정별 최근 7일 vs 이전 8주 평균 (가중점수)]");Z.alerts.slice(0,12).forEach(a=>L.push(`${a.key} | 최근7일 ${fmt(a.cur)} | 8주평균 ${fmt(a.base)} | ${a.ratio===Infinity?"신규":"×"+a.ratio.toFixed(1)} | ${typeName(a.topType)} | ${a.st}`));
+  L.push("\n[이번 주 공정별]");Object.entries(Z.byProc).sort((x,y)=>y[1].score-x[1].score).forEach(([k,o])=>L.push(`${procName(k)} | ${o.n}건 | ${fmt(o.q)}개`));
+  const sg=trendSignals();L.push("\n[관리도 규칙 신호 – 앱 계산]");L.push(sg.length?trendText(sg):"없음");
+  if(Z.issues.length){L.push("\n[8D 검토 이슈와 사례집 대조]");Z.issues.slice(0,5).forEach(i=>L.push(`${typeName(i.type)} ${i.part||""} (${i.mach||procName(i.oproc)}) 4주 ${i.ser.join("→")} | 패턴 ${(i.m&&i.m.pats||[]).map(p=>p.id+" "+p.name+" (첫 확인: "+p.check+")").join(" / ")||"-"} | 사례 ${(i.m&&i.m.cases||[]).map(c=>c.id).join(", ")||"-"}`))}
+  if(Z.chg.length)L.push("\n[추적 중 변경점] "+Z.chg.map(({c,w})=>`${c.kind} ${c.part||""} ${c.mach||""}: ${txt(c.desc)} (전 ${fmt(w.before)} → 후 ${fmt(w.after)}/주)`).join(" ; "));
+  return L.join("\n")}
+const SYSANA=`너는 두원냉기 멕시코 품질팀의 분석 담당이다. 공정검사원들이 히트맵 앱에 기록한 불량 데이터로 공정 분석 보고서 초안을 쓴다. 독자는 정병훈 과장(품질)과 생산·생기 담당.
+규칙: 1) 데이터에 있는 숫자만 쓰고 없는 것은 [확인 필요]. 2) 관리도 신호는 앱이 계산한 것만 쓰고 직접 계산하지 않는다. 3) 원인은 [후보]로 쓰고, 사례집 패턴(P번호)·사례(C번호)가 오면 근거로 단다. 4) 작업자 실수 단독 원인 금지. 5) 표는 마크다운 표.
+현장 조건: 냉각탑 공급수 20℃대 고정, 금형반 없음, 흡기 커버·바디 외관품, 멕시코 경수, 재질 PP-TD40(사출)·PP-TD30(융착)·Al3003(배관). 불량은 발생 공정 기준으로 본다.
+구성: 1. 한 줄 결론 + 요약 3줄 / 2. 설비·공정별 현황 표 (| 설비·공정 | 최근 7일 | 8주 평균 | 배수 | 주요 불량 | 상태 |) / 3. 이상 추세 (관리도 신호)와 의미 / 4. 우선 과제 Top 3 – 각각 원인 후보, 첫 확인 항목, 참고 사례 / 5. 이번 주 조치 제안 표 (| 조치 | 담당 | 기한 |, 담당·기한은 [확인 필요]) / 6. 확인 필요.
+출력 언어: 한국어.`;
+function anaOffline(){const o=["공정 분석 보고서 (자동 집계) – "+Z.wk,"※ API 키 없이 데이터만으로 만든 보고서입니다.",""];
+  o.push("■ 설비·공정별 현황 (최근 7일 vs 이전 8주 평균, 가중점수)");o.push("| 설비·공정 | 최근 7일 | 8주 평균 | 배수 | 주요 불량 | 상태 |");o.push("|---|---|---|---|---|---|");
+  Z.alerts.slice(0,10).forEach(a=>o.push(`| ${a.key} | ${fmt(a.cur)} | ${fmt(a.base)} | ${a.ratio===Infinity?"신규":"×"+a.ratio.toFixed(1)} | ${typeName(a.topType)} | ${t("lv")[a.st==="hi"?"hi":a.st==="mid"?"mid":"ok"]} |`));
+  const sg=trendSignals();o.push("");o.push("■ 이상 추세 (관리도 규칙)");if(sg.length)sg.forEach(s=>o.push("  - "+trendText([s])));else o.push("  - 없음");
+  o.push("");o.push("■ 이번 주 Top 3");Z.top3.forEach((x,i)=>o.push(`  ${i+1}) ${typeName(x.type)} ${x.part||""} – ${fmt(x.q)}개 (${procName(x.proc)})`));
+  if(Z.issues.length){o.push("");o.push("■ 원인 후보 (사례집)");Z.issues.slice(0,3).forEach(i=>{o.push(`  - ${typeName(i.type)} ${i.part||""}`);(i.m&&i.m.pats||[]).forEach(p=>o.push(`      [후보 ${p.id}] ${p.name} – 첫 확인: ${p.check}`))})}
+  o.push("");o.push("■ 확인 필요: 담당·기한, 현장 실측값");return o.join("\n")}
+function anaSection(b,h,ko){const sg=trendSignals();
+  h(ko?"이상 추세 (히트맵 데이터에 관리도 규칙 자동 적용, 최근 28일)":"Tendencias anormales (reglas de control, 28 días)");
+  if(sg.length)b.appendChild(tbl([t("machine"),ko?"신호":"Señal",ko?"최근 7일":"7 días",t("defect")],sg.map(s=>[s.key,pill(s.rules.map(r=>L(RULEKO[r])).join(" · "),s.rules.includes("R1")?"#E11D48":"#D97706"),(ko?"합 ":"total ")+s.last7.reduce((x,y)=>x+y,0)+(ko?" (평소 하루 ":" (normal/día ")+s.cl.toFixed(1)+")",typeName(s.top)])));
+  else b.appendChild(el("p","msg",ko?"이상 추세 없음":"Sin tendencias anormales"));
+  h(ko?"공정 분석 보고서":"Reporte de análisis de proceso");
+  b.appendChild(el("p","msg",ko?"히트맵 데이터(설비별 추이·이상 추세·Top 3)와 사례집 패턴으로 보고서 초안을 씁니다. 입력할 것은 없습니다.":"Se redacta con los datos del mapa y el libro de casos. No hay nada que capturar."));
+  const bt=el("button","hbtn2",ko?"분석 보고서 작성":"Redactar reporte");bt.type="button";const out=el("div");b.appendChild(bt);b.appendChild(out);
+  bt.addEventListener("click",async()=>{const title=(ko?"공정 분석 보고서 ":"Reporte de proceso ")+Z.wk;
+    if(!aiCfg().key){docResult("ana",{title,text:anaOffline(),at:Date.now(),model:"auto"},out);return}
+    out.textContent="";out.appendChild(el("p","msg",ko?"분석 중… (30초~1분)":"Analizando…"));S.docBusy="ana";
+    try{const res=await askAI(anaData()+"\n\n위 데이터로 공정 분석 보고서 초안을 써줘.",[],{sys:SYSANA,search:1});const item={dept:"ana",task:"report",title,text:res.text,src:res.src,at:res.at,model:res.model};DOCH.unshift(item);saveDocs();docResult("ana",item,out)}
+    catch(e){out.textContent="";out.appendChild(el("p","msg",(ko?"오류: ":"Error: ")+e.message+aiErrHint(e.message)))}finally{S.docBusy=null}})}
+/* ---------- v1.8: android crew heads – metal shell, glass face screen, LED eyes that show the agent's status ---------- */
+const EYEC={hi:"#FF4D6A",mid:"#FFB020",ok:"#22D3EE",idle:"#24425E"};
+function androidHead(P,lk,frame){const S0=lk.shell||"#DCE4F2",Sl=shade(S0,0.35),Sd=shade(S0,-0.22),Sdd=shade(S0,-0.42);const lv=lk._lv||"ok",E=EYEC[lv]||EYEC.ok,Eg=lv==="idle"?"#24425E":shade(E,0.55);
+  const pl=lk.plates;
+  // side plates behind the head (reads like a hairstyle silhouette)
+  if(pl){P(0,4,4,13,OUT);P(20,4,4,13,OUT);P(0.5,4.5,3,12,pl);P(20.5,4.5,3,12,shade(pl,-0.25));P(1,5,1,6,shade(pl,0.35))}
+  // antenna
+  const ant=lk.ant||"none";
+  if(ant==="single"){P(11,-5,2,6,OUT);P(11.5,-4.5,1,5,Sd);P(10,-7.5,4,3,OUT);P(10.5,-7,3,2,E)}
+  if(ant==="twin"){P(5,-4,1.6,5,OUT);P(17.4,-4,1.6,5,OUT);P(4,-6,3.5,2.5,OUT);P(16.5,-6,3.5,2.5,OUT);P(4.5,-5.5,2.5,1.5,E);P(17,-5.5,2.5,1.5,E)}
+  if(ant==="fin"){P(9,-4,6,5,OUT);P(9.5,-3.5,5,4.5,"#8B5CF6");P(10,-3.5,1.5,4,"#C4B5FD")}
+  // shell (rounded) with outline
+  P(4,0,16,1,OUT);P(2,1,2,1,OUT);P(20,1,2,1,OUT);P(1,2,1,13,OUT);P(22,2,1,13,OUT);P(2,15,2,1,OUT);P(20,15,2,1,OUT);P(4,16,16,1,OUT);
+  P(4,1,16,1,S0);P(2,2,20,13,S0);P(4,15,16,1,Sd);P(2,12,20,3,Sd);P(4,1,10,1,Sl);P(3,2,3,6,Sl);P(19,3,2,10,Sd);
+  // panel seam + forehead light
+  P(3,4,18,0.5,Sd);P(11,1.5,2,1.5,lv==="hi"&&frame%2?E:Sdd);
+  // ear modules with LED
+  P(-1,6,3,6,OUT);P(-0.5,6.5,2,5,Sdd);P(-0.2,8,1.4,1.4,E);P(22,6,3,6,OUT);P(22.5,6.5,2,5,Sdd);P(22.8,8,1.4,1.4,E);
+  // glass face screen
+  P(4,5,16,8,OUT);P(4.5,5.5,15,7,"#060B16");P(4.5,5.5,15,0.6,"rgba(255,255,255,.18)");P(5,6,2,0.6,"rgba(255,255,255,.35)");
+  // LED eyes (style per crew member)
+  const ey=lk.eyes||"dot";const blink=lv!=="idle"&&frame%7===6;
+  if(lv==="idle"){P(7,9.5,3,0.7,E);P(14,9.5,3,0.7,E)}
+  else if(blink){P(7,9.5,3,0.6,E);P(14,9.5,3,0.6,E)}
+  else if(ey==="dot"){P(7,7.5,3,3,E);P(14,7.5,3,3,E);P(7,7.5,1,1,Eg);P(14,7.5,1,1,Eg)}
+  else if(ey==="bar"){P(6.5,8.5,4,1.6,E);P(13.5,8.5,4,1.6,E);P(6.5,8.5,1.2,0.6,Eg);P(13.5,8.5,1.2,0.6,Eg)}
+  else if(ey==="visor"){P(6,8.5,12,2,E);P(6,8.5,12,0.6,Eg);P(5.5,8,13,3,"rgba(34,211,238,.12)")}
+  else if(ey==="arc"){P(6.5,9,1,1.5,E);P(7.5,8,2,1,E);P(9.5,9,1,1.5,E);P(13.5,9,1,1.5,E);P(14.5,8,2,1,E);P(16.5,9,1,1.5,E)}
+  // mouth grille
+  if(lv==="hi")P(10,11.5,4,0.8,E);else{P(10,11.6,0.8,0.6,Sd);P(11.6,11.6,0.8,0.6,Sd);P(13.2,11.6,0.8,0.6,Sd)}
+  // status glow under the chin
+  P(6,15.5,12,0.6,lv==="idle"?Sdd:E);
+  const acc=lk.acc||[];if(acc.includes("headset")){P(1,-1.5,22,1.5,"#1A2234");P(17,13.5,6,1,"#1A2234");P(16,13,2,2,"#FF4D6A")}}
+const HEADSTYLE='alien';
+/* ---------- v1.9: round space-helmet crew (original design) – dark visor with status LEDs ---------- */
+function helmetHead(P,lk,frame){const S0=lk.shell||"#E8EEF7",Sl=shade(S0,0.4),Sd=shade(S0,-0.22),Sdd=shade(S0,-0.45);const lv=lk._lv||"ok",E=EYEC[lv]||EYEC.ok,Eg=lv==="idle"?"#24425E":shade(E,0.55);
+  const cx0=12,cy0=7,r=12.5;
+  // dome: outline ring then shaded shell, row by row
+  for(let y=-6;y<=19;y++){const dy=y+0.5-cy0;const hw=Math.sqrt(Math.max(0,r*r-dy*dy));if(hw<1)continue;const x0=Math.round(cx0-hw),w=Math.round(hw*2);P(x0-1,y,w+2,1,OUT)}
+  for(let y=-5;y<=18;y++){const dy=y+0.5-cy0;const hw=Math.sqrt(Math.max(0,(r-1)*(r-1)-dy*dy));if(hw<1)continue;const x0=Math.round(cx0-hw),w=Math.round(hw*2);
+    P(x0,y,w,1,S0);P(x0,y,Math.max(1,Math.round(w*0.18)),1,y<4?Sl:S0);P(x0+w-Math.max(1,Math.round(w*0.2)),y,Math.max(1,Math.round(w*0.2)),1,Sd);if(y>=15)P(x0,y,w,1,Sd)}
+  P(6,-4,4,1,Sl);P(4,-2,2,2,Sl);
+  // side lights
+  P(-1.5,5,2.5,4,OUT);P(-1,5.5,1.5,3,E);P(23,5,2.5,4,OUT);P(23.5,5.5,1.5,3,E);
+  // visor
+  P(2.5,1.5,19,11,OUT);P(3,2,18,10,"#05080F");P(3.5,2.5,17,1,"rgba(34,211,238,.25)");P(4,3.5,3,1,"rgba(255,255,255,.55)");P(4,4.5,1,2,"rgba(255,255,255,.35)");P(16,10,4,0.8,"rgba(139,92,246,.45)");
+  const ey=lk.eyes||"dot";const blink=lv!=="idle"&&frame%7===6;
+  if(lv==="idle"){P(6.5,7.5,3,0.7,E);P(14.5,7.5,3,0.7,E)}
+  else if(blink){P(6.5,7.5,3,0.6,E);P(14.5,7.5,3,0.6,E)}
+  else if(ey==="dot"){P(7,6,3,3,E);P(14,6,3,3,E);P(7,6,1,1,Eg);P(14,6,1,1,Eg)}
+  else if(ey==="bar"){P(6.5,7,4,1.6,E);P(13.5,7,4,1.6,E);P(6.5,7,1.2,0.6,Eg);P(13.5,7,1.2,0.6,Eg)}
+  else if(ey==="visor"){P(5.5,6.8,13,2,E);P(5.5,6.8,13,0.6,Eg)}
+  else if(ey==="arc"){P(6.5,7.5,1,1.5,E);P(7.5,6.5,2,1,E);P(9.5,7.5,1,1.5,E);P(13.5,7.5,1,1.5,E);P(14.5,6.5,2,1,E);P(16.5,7.5,1,1.5,E)}
+  if(lv==="hi")P(10,10,4,0.8,E);
+  // collar ring
+  P(4,16.5,16,2,OUT);P(4.5,17,15,1,"#1A2442");P(5,17,14,0.5,lv==="idle"?Sdd:E);
+  const ant=lk.ant||"none";if(ant==="single"){P(17,-7,1.4,3,OUT);P(16.3,-8.5,2.8,2,E)}if(ant==="twin"){P(6,-7,1.4,3,OUT);P(16.6,-7,1.4,3,OUT);P(5.3,-8.5,2.8,2,E);P(15.9,-8.5,2.8,2,E)}if(ant==="fin"){P(10,-8,4,3,OUT);P(10.5,-7.5,3,2.5,"#8B5CF6")}
+  const acc=lk.acc||[];if(acc.includes("headset")){P(16,12.5,6,1,"#1A2234");P(15,12,2,2,"#FF4D6A")}}
+/* ---------- v2.0: original alien crew – colourful skin, round eyes (1·2·3), antennae/gem glow in the status colour ---------- */
+function alienHead(P,lk,frame){const C=lk.askin||"#2DD4BF",Cl=shade(C,0.32),Cd=shade(C,-0.25),Cdd=shade(C,-0.5);const lv=lk._lv||"ok",E=EYEC[lv]||EYEC.ok;const K="#0B1020",W="#F8FAFC";
+  const ant=lk.aant||"bulbs";
+  if(ant==="bulbs"){P(6.5,-5,1.4,6,OUT);P(16.1,-5,1.4,6,OUT);P(6.8,-4.5,0.8,5,Cd);P(16.4,-4.5,0.8,5,Cd);P(5,-8.5,4.5,4,OUT);P(14.5,-8.5,4.5,4,OUT);P(5.5,-8,3.5,3,E);P(15,-8,3.5,3,E);P(5.8,-7.7,1,1,"#FFFFFF");P(15.3,-7.7,1,1,"#FFFFFF")}
+  if(ant==="single"){P(11.3,-6,1.4,7,OUT);P(11.6,-5.5,0.8,6,Cd);P(9.8,-9.5,4.4,4,OUT);P(10.3,-9,3.4,3,E);P(10.6,-8.7,1,1,"#FFFFFF")}
+  if(ant==="fins"){P(-2.5,3,3.5,9,OUT);P(-2,4,2.5,7,Cl);P(-1.5,5,1,5,E);P(23,3,3.5,9,OUT);P(23.5,4,2.5,7,Cd);P(24,5,1,5,E)}
+  // head (wide dome)
+  P(5,-1,14,1,OUT);P(3,0,2,1,OUT);P(19,0,2,1,OUT);P(2,1,1,2,OUT);P(21,1,1,2,OUT);P(1,3,1,11,OUT);P(22,3,1,11,OUT);P(2,14,2,1,OUT);P(20,14,2,1,OUT);P(4,15,16,1,OUT);
+  P(5,0,14,1,C);P(3,1,18,2,C);P(2,3,20,11,C);P(4,14,16,1,C);
+  P(5,0,8,1,Cl);P(3,1,3,1,Cl);P(2,3,2,6,Cl);P(20,4,2,9,Cd);P(4,13,16,1.5,Cd);P(16,2,1.5,1.5,Cd);P(18.5,4,1,1,Cd);P(14.5,1.2,1,1,Cd);
+  if(ant==="gem"){P(10.5,1,3,2.6,OUT);P(11,1.4,2,1.8,E);P(11,1.4,0.8,0.8,"#FFFFFF")}
+  // eyes
+  const ey=lk.aeyes||"two";const shut=lv==="idle"||(frame%7===6);
+  if(shut){if(ey==="one")P(8,8.5,8,1,K);else if(ey==="three"){[4.5,10,15.5].forEach(x=>P(x,8.5,4,0.9,K))}else{P(5,9,5,0.9,K);P(14,9,5,0.9,K)}}
+  else if(ey==="one"){P(7,4.5,10,8,OUT);P(7.5,5,9,7,W);P(10,6.5,4.5,4.5,C);P(11,7.5,2.5,2.5,K);P(10.5,6.8,1.2,1.2,"#FFFFFF")}
+  else if(ey==="three"){[4.5,10,15.5].forEach(x=>{P(x,6,4,4.5,OUT);P(x+0.5,6.5,3,3.5,W);P(x+1.5,7.5,1.5,2,K);P(x+0.8,6.8,0.8,0.8,"#FFFFFF")})}
+  else{[5,14].forEach(x=>{P(x,5.5,5,5.5,OUT);P(x+0.5,6,4,4.5,W);P(x+1.8,7.5,2,2.5,K);P(x+1,6.5,1,1,"#FFFFFF")})}
+  if((lk.acc||[]).includes("lash")&&!shut){P(4,5,1,1,K);P(19,5,1,1,K)}
+  // cheeks + mouth
+  P(3.5,11,2,1,shade(C,0.45));P(18.5,11,2,1,shade(C,0.45));
+  if(lv==="hi"){P(10.5,11.5,3,2,OUT);P(11,12,2,1,"#5B0E1E")}else{P(9.5,12,0.8,0.8,Cdd);P(10.3,12.6,3.4,0.8,Cdd);P(13.7,12,0.8,0.8,Cdd)}
+  if((lk.acc||[]).includes("headset")){P(1,-0.5,22,1.4,"#1A2234");P(17,12.5,6,1,"#1A2234");P(16,12,2,2,"#FF4D6A")}}
 /* ---------- walking hand-offs ---------- */
 const WALK=[];
 function startWalk(from,to){const a=AGI[from];if(!a||a.room||WALK.some(w=>w.who===from))return;const s=SEATS[a.desk];
@@ -753,11 +947,11 @@ let Z=null,ST=null,tick=0;
 function draw(){tick++;stepWalk();cx.setTransform(2,0,0,2,0,0);cx.imageSmoothingEnabled=false;cx.clearRect(0,0,VW,VH);room(Z,tick);
   const items=[];AG.forEach(a=>{if(a.room)return;const s=SEATS[a.desk];const away=WALK.find(w=>w.who===a.id);const lv=ST?ST[a.id].lv:"idle";
     shadowE(s.x,s.y+36,26,1.5,0.26);
-    items.push({y:s.y+16,f:()=>{fxItem("c:"+a.id,[s.x-11,s.y,22,19],()=>chair(s.x,s.y,a.look.chair),1);const fr=lv==="idle"?0:Math.floor(tick/4);if(!away)fxItem("p:"+a.id+":"+(fr%2),[s.x-13,s.y-10,27,48],()=>person(s.x,s.y-4,a.look,fr,true,false),1);
+    items.push({y:s.y+16,f:()=>{fxItem("c:"+a.id,[s.x-11,s.y,22,19],()=>chair(s.x,s.y,a.look.chair),1);const fr=lv==="idle"?0:Math.floor(tick/4);a.look._lv=lv;if(!away)fxItem("p:"+a.id+":"+lv+":"+(fr%14),[s.x-13,s.y-10,27,48],()=>person(s.x,s.y-4,a.look,fr,true,false),1);
       const bl=lv==="hi"&&Math.floor(tick/5)%2;fxItem("d:"+a.id+":"+lv+":"+(bl?1:0),[s.x-26,s.y+5,53,33],()=>desk(s.x,s.y,lv,bl,a.id));if(!away&&lv==="idle")zz(s.x,s.y-4,tick)}})});
-  XGROUP.forEach(g=>items.push({y:RM.ty-2,f:()=>{fxItem("xc:"+g.id,[g.x-11,RM.ty-31,22,19],()=>chair(g.x,RM.ty-31,"#3B4258"));const fr=S.aiBusy?Math.floor((tick+g.x)/4):0;fxItem("xp:"+g.id+":"+(fr%2),[g.x-13,RM.ty-40,27,48],()=>person(g.x,RM.ty-34,g.lk,fr,true,false),1)}}));
+  XGROUP.forEach(g=>items.push({y:RM.ty-2,f:()=>{fxItem("xc:"+g.id,[g.x-11,RM.ty-31,22,19],()=>chair(g.x,RM.ty-31,"#3B4258"));const fr=S.aiBusy?Math.floor((tick+g.x)/4):0;g.lk._lv=S.aiBusy?"mid":"ok";fxItem("xp:"+g.id+":"+g.lk._lv+":"+(fr%14),[g.x-13,RM.ty-40,27,48],()=>person(g.x,RM.ty-34,g.lk,fr,true,false),1)}}));
   items.push({y:RM.ty,f:tableTop});
-  WALK.forEach(w=>{const a=AGI[w.who];shadowE(w.x,w.y,8,1.5,0.24);items.push({y:w.y+0.5,f:()=>fxItem(null,[w.x-13,w.y-34,28,36],()=>person(Math.round(w.x),Math.round(w.y)-28,a.look,Math.floor((w.frame||0)/5),false,w.carry),1)})});
+  WALK.forEach(w=>{const a=AGI[w.who];shadowE(w.x,w.y,8,1.5,0.24);items.push({y:w.y+0.5,f:()=>{a.look._lv=ST&&ST[a.id]?ST[a.id].lv:"ok";fxItem(null,[w.x-13,w.y-34,28,36],()=>person(Math.round(w.x),Math.round(w.y)-28,a.look,Math.floor((w.frame||0)/5),false,w.carry),1)}})});
   items.sort((p,q)=>p.y-q.y).forEach(i=>i.f());
   const mini=stage.clientWidth<620;const sym={hi:"!",mid:"?",ok:"✓",idle:"z"};
   AG.forEach(a=>{const an=anchor(a);const w=WALK.find(x=>x.who===a.id);const bx=w?w.x:an.x,by=w?w.y-30:an.y;const b=BUB[a.id];
@@ -928,7 +1122,7 @@ function docExtra(tk){let x="";
 function heatSummary(){if(!Z)return"";const L=[`[히트맵 요약 ${Z.wk}] 이번 주 ${Z.thisW.length}건 ${fmt(Z.thisW.reduce((s,r)=>s+r.qty,0))}개`];
   Z.top3.forEach((x,i)=>L.push(`Top${i+1} ${typeName(x.type)} ${x.part||""} ${fmt(x.q)}개`));
   Z.alerts.slice(0,5).forEach(a=>L.push(`${a.st==="hi"?"경보":"주의"} ${a.key} ${typeName(a.topType)} 최근 7일 ${fmt(a.cur)} (${a.ratio===Infinity?"신규":"×"+a.ratio.toFixed(1)})`));
-  if(S.demo)L.push("(데모 데이터)");return L.join("\n")}
+  {const sg=trendSignals();if(sg.length)L.push("[관리도 규칙 신호] "+trendText(sg))}if(S.demo)L.push("(데모 데이터)");return L.join("\n")}
 /* read office files in the browser: pptx/docx are zip – inflate with DecompressionStream */
 async function zipEntries(buf,want){const dv=new DataView(buf);let e=-1;for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-70000);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}if(e<0)return [];
   const n=dv.getUint16(e+10,true);let off=dv.getUint32(e+16,true);const out=[];
@@ -959,12 +1153,12 @@ const safeName=s=>String(s).replace(/[\\/:*?"<>|]/g,"_").slice(0,60);
 function docXlsx(title,text){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([[title]].concat(String(text).split("\n").map(l=>[l])));ws["!cols"]=[{wch:110}];XLSX.utils.book_append_sheet(wb,ws,lang==="ko"?"초안":"Borrador");
   mdTables(text).forEach((tb,i)=>{const w=XLSX.utils.aoa_to_sheet(tb);w["!cols"]=tb[0].map((_,j)=>({wch:Math.min(50,Math.max(8,...tb.map(r=>String(r[j]||"").length+2)))}));XLSX.utils.book_append_sheet(wb,w,(lang==="ko"?"표":"Tabla")+(i+1))});
   XLSX.writeFile(wb,safeName(title)+".xlsx")}
-function mdToHtml(text){const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));let h="",tb=null;
-  const flush=()=>{if(tb){h+="<table border=1 cellspacing=0 cellpadding=4 style='border-collapse:collapse;font-size:10pt;margin:4px 0'>"+tb.map((r,i)=>"<tr>"+r.map(c=>(i?"<td>":"<th style='background:#D9E1F2'>")+esc(c)+(i?"</td>":"</th>")).join("")+"</tr>").join("")+"</table>";tb=null}};
+function mdToHtml(text,word){const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));let h="",tb=null;
+  const flush=()=>{if(tb){h+="<table border=1 cellspacing=0 cellpadding=4 style='border-collapse:collapse;font-size:10pt;margin:4px 0'>"+tb.map((r,i)=>"<tr>"+r.map(c=>(i?"<td>":"<th style='background:"+(word?"#D9E1F2":"#16244A")+"'>")+esc(c)+(i?"</td>":"</th>")).join("")+"</tr>").join("")+"</table>";tb=null}};
   String(text).split("\n").forEach(l=>{const s=l.trim();if(/^\|.*\|$/.test(s)){if(!/^\|[\s:\-|]+\|$/.test(s))(tb=tb||[]).push(s.slice(1,-1).split("|").map(c=>c.trim().replace(/\*\*/g,"")));return}flush();
-    if(/^#{1,4}\s/.test(s)||/^■/.test(s))h+="<h4 style='color:#1F3358;margin:8px 0 2px'>"+esc(s.replace(/^#+\s*/,""))+"</h4>";else if(s)h+="<p style='margin:2px 0'>"+esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")+"</p>"});flush();return h}
+    if(/^#{1,4}\s/.test(s)||/^■/.test(s))h+="<h4 style='color:"+(word?"#1F3358":"#67E8F9")+";margin:8px 0 2px'>"+esc(s.replace(/^#+\s*/,""))+"</h4>";else if(s)h+="<p style='margin:2px 0'>"+esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")+"</p>"});flush();return h}
 function docWord(title,text){const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-  const html=`<html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="font-family:'Malgun Gothic',Arial;font-size:10.5pt"><h2 style="color:#1F3358">${esc(title)}</h2>${mdToHtml(text)}</body></html>`;
+  const html=`<html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="font-family:'Malgun Gothic',Arial;font-size:10.5pt"><h2 style="color:#1F3358">${esc(title)}</h2>${mdToHtml(text,true)}</body></html>`;
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+html],{type:"application/msword"}));a.download=safeName(title)+".doc";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function docOffline(dept,tk,memo,inp,lg){const H=tk.fmt.split(":").slice(1).join(":").split(" / ").map(s=>s.trim()).filter(Boolean);const ko=lg==="ko";
   const o=[(ko?"초안 (템플릿) – ":"Borrador (plantilla) – ")+(ko?tk.ko:tk.es),ko?"※ API 키가 없어 양식 틀만 채웠습니다. 칸을 채워 쓰세요.":"※ Sin clave API: solo la estructura.",""];
@@ -1014,7 +1208,7 @@ function openDrawer(id,pre){id={chg:"fu",eff:"fu",iqc:"insp",rep:"ana",kb:"d8",s
   if(is_("kb")&&KB){const dt=el("details");dt.appendChild(el("summary",null,(lang==="ko"?"사례집 보기 – 사례 ":"Libro de casos – ")+KB.cases.length+(lang==="ko"?" · 패턴 ":" · patrones ")+KB.pats.length));const hh=x=>dt.appendChild(el("h3",null,x));
     hh(lang==="ko"?"원인 패턴":"Patrones");dt.appendChild(tbl(["No",t("pat"),t("first"),t("perm")],KB.pats.map(p=>[p.id,p.name,p.check,p.perm])));hh(lang==="ko"?"사례":"Casos");dt.appendChild(tbl(["ID","",lang==="ko"?"현상":"Fenómeno",t("lesson")],KB.cases.map(c=>[c.id,c.st,c.ph,c.lesson])));b.appendChild(dt)}
   if(is_("kb")&&!KB){const bt=document.createElement("button");bt.type="button";bt.className="hbtn";bt.textContent=t("kbLoad");bt.addEventListener("click",()=>{closeDrawer();$("setBox").classList.add("open");$("iKb").click()});b.appendChild(bt)}
-  if(is_("ana"))spcSection(b,h,lang==="ko");
+  if(is_("ana"))anaSection(b,h,lang==="ko");
   if(is_("d8")){h(t("week")+" Top 3");b.appendChild(tbl(["#",t("defect"),t("part"),t("qty"),"8D"],Z.top3.map((x,i)=>[i+1,typeName(x.type),x.part||"-",fmt(x.q),Z.d8.includes(x)?pill(lang==="ko"?"후보":"candidato","#E59500"):"-"])))}
   if(is_("sup")){h(lang==="ko"?"협력사 원인 불량 (이번 주)":"Origen proveedor (esta semana)");if(!Z.sup.length)b.appendChild(el("p","msg",t("none")))}if(is_("sup")&&Z.sup.length)b.appendChild(tbl([t("defect"),t("part"),t("qty"),t("machine")],Z.sup.map(r=>[typeName(r.type),r.part,fmt(r.qty),r.mach])));
   if(is_("rep")){h(t("week")+" · "+t("proc"));b.appendChild(tbl([t("proc"),t("regs"),t("qty"),t("score")],Object.entries(Z.byProc).sort((x,y)=>y[1].score-x[1].score).map(([k,o])=>[procName(k),o.n,fmt(o.q),fmt(o.score)])));
