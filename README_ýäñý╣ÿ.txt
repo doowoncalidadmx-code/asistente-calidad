@@ -1,6 +1,9 @@
 품질 비서 (개인용) – 설치 방법
 
-1) GitHub에서 새 저장소를 만듭니다. 예: asistente-calidad  (불량 히트맵과 같은 계정이면 서버 연결이 자동으로 이어집니다)
+※ 주의: 불량 히트맵 저장소(mapa-defectos)에는 절대 올리지 마세요. 히트맵이 덮어써집니다.
+   반드시 새 저장소(asistente-calidad)를 만들어 거기에 올립니다.
+
+1) GitHub 오른쪽 위 + → New repository → 이름 asistente-calidad → Public → Create repository  (불량 히트맵과 같은 계정이면 서버 연결이 자동으로 이어집니다)
 2) 이 폴더의 파일을 모두 그 저장소 맨 위에 올립니다 (index.html, manifest.webmanifest, sw.js, icons 폴더).
 3) Settings → Pages → Branch: main / (root) → Save.  1~2분 뒤 주소: https://<계정>.github.io/asistente-calidad/
 4) 휴대폰에서 그 주소를 열고 설치
